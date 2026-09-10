@@ -1,0 +1,12 @@
+from pathlib import Path
+p=Path('/home/ubuntu/taraz-operations/client/src/pages/OrderEntry.tsx')
+s=p.read_text()
+s=s.replace('const [mapModal,setMapModal]=useState(false); const [mapMarker,setMapMarker]=useState<google.maps.marker.AdvancedMarkerElement|null>(null);', 'const [mapModal,setMapModal]=useState(false); const [mapMarker,setMapMarker]=useState<google.maps.marker.AdvancedMarkerElement|null>(null); const [locationLabel,setLocationLabel]=useState("");')
+s=s.replace('onClick={()=>setMapModal(true)}>تغییر لوکیشن', 'onClick={()=>{setLocationLabel(point.label);setMapModal(true)}}>تغییر لوکیشن', 1)
+s=s.replace('<MapView className="order-location-picker" initialCenter={{lat:point.lat,lng:point.lng}} initialZoom={13}', '<label className="location-address-input">آدرس، محله یا توضیح موقعیت<input value={locationLabel} onChange={e=>setLocationLabel(e.target.value)} placeholder="مثلاً تهران، ونک، خیابان ملاصدرا"/><small>می‌توانید متن را تایپ کنید یا مستقیماً روی نقشه کلیک کنید.</small></label><MapView className="order-location-picker" initialCenter={{lat:point.lat,lng:point.lng}} initialZoom={13}', 1)
+s=s.replace('label:`مختصات ${event.latLng.lat().toFixed(4)}، ${event.latLng.lng().toFixed(4)}`};marker.position={lat:next.lat,lng:next.lng};setPoint(next);', 'label:locationLabel.trim()||`مختصات ${event.latLng.lat().toFixed(4)}، ${event.latLng.lng().toFixed(4)}`};marker.position={lat:next.lat,lng:next.lng};setPoint(next);setLocationLabel(next.label);', 1)
+s=s.replace('<button type="button" className="primary-button" onClick={()=>setMapModal(false)}><Check size={16}/> تأیید موقعیت</button>', '<button type="button" className="primary-button" onClick={()=>{const label=locationLabel.trim()||point.label;setPoint({...point,label});setMapModal(false)}}><Check size={16}/> ثبت این موقعیت</button>', 1)
+p.write_text(s)
+css=Path('/home/ubuntu/taraz-operations/client/src/factory-pages.css')
+css.write_text(css.read_text()+'''\n.location-address-input{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;font-size:12px;font-weight:700;color:#17233d}.location-address-input input{border:1px solid #d8dee8;border-radius:8px;padding:10px 11px;background:#fff;color:#17233d;font:inherit;font-weight:400}.location-address-input small{font-size:10px;color:#6c7886;font-weight:400}.dark .location-address-input{color:#fff}.dark .location-address-input input{background:#111725;border-color:#33405a;color:#fff}.dark .location-address-input small{color:#a8b0c0}\n''')
+print('location entry improved')
