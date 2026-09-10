@@ -1,0 +1,14 @@
+from pathlib import Path
+p=Path('/home/ubuntu/taraz-operations/client/src/pages/OrderEntry.tsx')
+s=p.read_text()
+s=s.replace('const [lines,setLines]=useState<Line[]>([blank()]); const [point]=useState({lat:35.7549,lng:51.4096,label:"ونک، ملاصدرا"}); const [saved,setSaved]=useState(false);', 'const [lines,setLines]=useState<Line[]>([blank()]); const [point,setPoint]=useState({lat:35.7549,lng:51.4096,label:"ونک، ملاصدرا"}); const [saved,setSaved]=useState(false); const [mapModal,setMapModal]=useState(false); const [mapMarker,setMapMarker]=useState<google.maps.marker.AdvancedMarkerElement|null>(null);')
+s=s.replace('<button className="outline-button" type="button">تغییر لوکیشن</button></div></section>', '<button className="outline-button" type="button" onClick={()=>setMapModal(true)}>تغییر لوکیشن</button></div></section>', 1)
+needle='return <div className="order-entry-page">'
+insert='return <div className="order-entry-page">{mapModal&&<div className="customer-modal-backdrop"><div className="customer-modal location-modal"><div className="customer-modal-head"><div><span className="eyebrow">موقعیت سفارش</span><h2>تغییر لوکیشن</h2><p>روی نقشه نقطه جدید را انتخاب کنید.</p></div><button type="button" className="modal-close" onClick={()=>setMapModal(false)}>×</button></div><MapView className="order-location-picker" initialCenter={{lat:point.lat,lng:point.lng}} initialZoom={13} onMapReady={map=>{if(mapMarker)mapMarker.map=null;const marker=new window.google.maps.marker.AdvancedMarkerElement({map,position:{lat:point.lat,lng:point.lng},title:point.label});setMapMarker(marker);map.addListener("click",event=>{if(!event.latLng)return;const next={lat:event.latLng.lat(),lng:event.latLng.lng(),label:`مختصات ${event.latLng.lat().toFixed(4)}، ${event.latLng.lng().toFixed(4)}`};marker.position={lat:next.lat,lng:next.lng};setPoint(next);});}}/><div className="selected-location-row"><MapPin size={16}/><span>{point.label}</span><small>{point.lat.toFixed(5)} · {point.lng.toFixed(5)}</small></div><div className="modal-actions"><button type="button" className="outline-button" onClick={()=>setMapModal(false)}>انصراف</button><button type="button" className="primary-button" onClick={()=>setMapModal(false)}><Check size={16}/> تأیید موقعیت</button></div></div></div>}'
+if needle not in s: raise SystemExit('return not found')
+s=s.replace(needle,insert,1)
+p.write_text(s)
+
+css=Path('/home/ubuntu/taraz-operations/client/src/factory-pages.css')
+css.write_text(css.read_text()+'''\n.location-modal{max-width:760px}.order-location-picker{height:380px!important;border-radius:12px;overflow:hidden}.selected-location-row{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;background:#f3f5f8;border-radius:9px;color:#17233d;font-size:12px}.selected-location-row small{margin-right:auto;color:#6c7886}.dark .selected-location-row{background:#151c2c;color:#fff}\n''')
+print('order location connected')
