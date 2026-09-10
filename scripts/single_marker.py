@@ -1,0 +1,6 @@
+from pathlib import Path
+p=Path('/home/ubuntu/taraz-operations/client/src/pages/OrderEntry.tsx')
+s=p.read_text()
+s=s.replace('let marker:google.maps.marker.AdvancedMarkerElement|null=null;const placeMarker=(next:{lat:number;lng:number;label:string})=>{try{if(marker)marker.map=null;marker=new window.google.maps.marker.AdvancedMarkerElement({map,position:{lat:next.lat,lng:next.lng},title:next.label});setMapMarker(marker);}catch{try{const legacy=new window.google.maps.Marker({map,position:{lat:next.lat,lng:next.lng},title:next.label});setMapMarker(legacy as unknown as google.maps.marker.AdvancedMarkerElement);}catch{}}};', 'let marker:any=null;const removeMarker=()=>{if(!marker)return;try{marker.map=null;}catch{}try{marker.setMap(null);}catch{}marker=null;setMapMarker(null);};const placeMarker=(next:{lat:number;lng:number;label:string})=>{removeMarker();try{marker=new window.google.maps.marker.AdvancedMarkerElement({map,position:{lat:next.lat,lng:next.lng},title:next.label});setMapMarker(marker);}catch{try{marker=new window.google.maps.Marker({map,position:{lat:next.lat,lng:next.lng},title:next.label});setMapMarker(marker);}catch{marker=null;}}};')
+p.write_text(s)
+print('single marker enforced')
