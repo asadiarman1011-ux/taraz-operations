@@ -5,7 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { createCustomer, createOrder, listCustomers, listOrders, updateCustomer } from "./db";
 
-const customerInput = z.object({
+export const customerInput = z.object({
   name: z.string().min(1), phone: z.string().min(1), business: z.string().default(""), city: z.string().default(""),
   address: z.string().default(""), lat: z.number().nullable().optional(), lng: z.number().nullable().optional(),
   status: z.enum(["ثابت", "غیر ثابت", "نیاز به پیگیری", "در حال پیگیری"]).default("غیر ثابت"), note: z.string().nullable().optional(),

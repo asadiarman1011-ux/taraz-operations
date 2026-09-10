@@ -24,3 +24,7 @@
 .current-location-button{display:inline-flex;align-items:center;gap:6px;width:max-content;border:1px solid #cbd5e3;background:#eef3f9;color:#142344;border-radius:8px;padding:8px 11px;font:inherit;font-size:12px;cursor:pointer;margin-bottom:10px}.current-location-button:hover{background:#dfe8f4}.location-status{margin:-4px 0 10px;color:#244b88;font-size:11px}.dark .current-location-button{background:#1b2942;border-color:#40516e;color:#fff}.dark .location-status{color:#b9cbe7}
 
 .location-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+.history-modal{max-width:820px}.history-modal-list{max-height:58vh;overflow:auto;border-top:1px solid #edf0ec}.history-modal-item{display:flex;justify-content:space-between;gap:14px;padding:14px 4px;border-bottom:1px solid #edf0ec}.history-modal-item strong{display:block;font-size:12px;color:#17233d}.history-modal-item span{display:block;font-size:10px;color:#7f8c85;margin-top:4px}.history-modal-item p{font-size:10px;color:#62716a;margin:7px 0 0}.history-modal-item>b{white-space:nowrap;font-size:12px;color:#1a3d30}.dark .history-modal-item strong{color:#fff}.dark .history-modal-item span,.dark .history-modal-item p{color:#a8b0c0}
+@media(max-width:1100px){.sales-page,.access-page,.order-entry-page{padding-top:68px}}
+@media(max-width:600px){.history-modal-item{align-items:flex-start;flex-direction:column}.history-modal-item>b{align-self:flex-start}}
