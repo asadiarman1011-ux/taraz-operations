@@ -11,6 +11,7 @@ import OrderDetails from "@/pages/OrderDetails";
 import Access from "@/pages/Access";
 import "./factory-pages.css";
 import DashboardLayout from "./components/DashboardLayout";
+import { useEffect } from "react";
 
 const SalesPage = () => <DashboardLayout><Sales /></DashboardLayout>;
 const OrderEntryPage = () => <DashboardLayout><OrderEntry /></DashboardLayout>;
@@ -42,6 +43,13 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+  useEffect(() => {
+    const resetKey = "sepid-clean-start-v1";
+    if (!localStorage.getItem(resetKey)) {
+      ["taraz-orders", "taraz-garments", "taraz-materials", "sepid-customers", "sepid-activities", "sepid-unread-count", "sepid-last-seen-activity"].forEach(key => localStorage.removeItem(key));
+      localStorage.setItem(resetKey, "done");
+    }
+  }, []);
   return (
     <ErrorBoundary>
       <ThemeProvider

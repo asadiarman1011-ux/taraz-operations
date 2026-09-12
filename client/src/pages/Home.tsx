@@ -3,7 +3,6 @@ import { MapView } from "@/components/Map";
 import {
   Archive,
   ArrowDownLeft,
-  ArrowUpLeft,
   Bell,
   Box,
   Boxes,
@@ -81,38 +80,9 @@ type OrderDraft = Omit<Order, "id" | "createdAt" | "status" | "delivery">;
 type ProductDraft = Omit<Garment, "id">;
 type MaterialDraft = Omit<RawMaterial, "id" | "tags">;
 
-const initialOrders: Order[] = [
-  {
-    id: "ORD-1048", customer: "مریم محمدی", phone: "۰۹۱۲ ۶۸۴ ۱۰۴۸", city: "تهران", address: "ونک، خیابان ملاصدرا، کوچه نهم، پلاک ۲۴", business: "کافه آتریوم", product: "کاپشن کجراه سرمه‌ای", qty: 18, total: 19600000, status: "pending", createdAt: new Date(2026, 8, 8, 9, 15).getTime(),
-    location: { lat: 35.7549, lng: 51.4096, label: "ونک، ملاصدرا" },
-  },
-  {
-    id: "ORD-1047", customer: "علی شریفی", phone: "۰۹۱۳ ۳۲۱ ۸۰۲۱", city: "اصفهان", address: "خیابان چهارباغ بالا، مجتمع سپاهان", business: "رستوران ترنج", product: "پیراهن فرم کرم", qty: 32, total: 21400000, status: "pending", createdAt: new Date(2026, 8, 7, 13, 40).getTime(),
-    location: { lat: 32.6333, lng: 51.6422, label: "چهارباغ بالا، اصفهان" },
-  },
-  {
-    id: "ORD-1045", customer: "لیلا اکبری", phone: "۰۹۱۵ ۴۱۲ ۶۹۰۲", city: "مشهد", address: "بلوار سجاد، بین حامد و بهارستان", business: "کلینیک آرمان", product: "مانتو فرم طوسی", qty: 14, total: 17300000, status: "delivered", createdAt: new Date(2026, 8, 5, 10, 20).getTime(),
-    location: { lat: 36.3133, lng: 59.5269, label: "بلوار سجاد، مشهد" }, delivery: { completedAt: new Date(2026, 8, 7, 16, 10).getTime(), cost: 620000, method: "اسنپ‌باکس", note: "تحویل به مسئول پذیرش کلینیک" },
-  },
-  {
-    id: "ORD-1042", customer: "سارا رستمی", phone: "۰۹۱۲ ۷۶۸ ۱۴۹۰", city: "کرج", address: "عظیمیه، بلوار شریعتی، برج آرین", business: "آموزشگاه زبان دایان", product: "تی‌شرت پنبه‌ای سبز", qty: 24, total: 11800000, status: "delivered", createdAt: new Date(2026, 8, 2, 8, 30).getTime(),
-    location: { lat: 35.8401, lng: 50.9391, label: "عظیمیه، کرج" }, delivery: { completedAt: new Date(2026, 8, 4, 12, 25).getTime(), cost: 480000, method: "باربری", note: "رسید باربری در پرونده سفارش ثبت شد" },
-  },
-];
-
-const initialGarments: Garment[] = [
-  { id: "GR-001", type: "کاپشن", fabric: "کجراه", color: "سرمه‌ای", stock: 48, reserved: 18, sku: "JK-TR-204", details: "سایز M تا 3XL", weight: "۲۸۰ گرم", button: "دکمه فشاری فلزی", description: "آستر توری، دو جیب زیپ‌دار، یقه ایستاده و نوار شب‌رنگ روی آستین." },
-  { id: "GR-002", type: "پیراهن فرم", fabric: "ترگال", color: "کرم", stock: 76, reserved: 32, sku: "SH-CR-118", details: "سایز S تا 2XL", weight: "۲۰۰ گرم", button: "دکمه صدفی", description: "یقه مردانه، برش آزاد، قابلیت گلدوزی لوگو روی سینه." },
-  { id: "GR-003", type: "مانتو فرم", fabric: "فاستونی", color: "طوسی", stock: 21, reserved: 0, sku: "MT-GR-087", details: "سایز 36 تا 48", weight: "۲۴۰ گرم", button: "مخفی", description: "پارچه ضدچروک، مچ قابل تنظیم و دوخت صنعتی تقویت‌شده." },
-  { id: "GR-004", type: "تی‌شرت", fabric: "پنبه‌ای", color: "سبز زیتونی", stock: 64, reserved: 0, sku: "TS-OL-066", details: "سایز M تا XXL", weight: "۱۸۰ گرم", button: "بدون دکمه", description: "یقه کش‌بافت، مناسب استفاده روزانه و چاپ سیلک." },
-];
-
-const initialMaterials: RawMaterial[] = [
-  { id: "RM-010", name: "پارچه کجراه", category: "پارچه", stock: 182, unit: "متر", threshold: 80, tags: ["پلی‌استر/ویسکوز", "سرمه‌ای", "۲۸۰ گرم"], description: "عرض ۱۵۰ سانتی‌متر، مناسب کاپشن و لباس کار." },
-  { id: "RM-014", name: "نخ دوخت صنعتی", category: "نخ", stock: 24, unit: "قرقره", threshold: 30, tags: ["پلی‌استر", "سرمه‌ای", "ضخامت 40/2"], description: "مقاومت بالا برای چرخ صنعتی، قابل استفاده برای دوخت دوبل." },
-  { id: "RM-018", name: "دکمه فشاری ۱۵mm", category: "دکمه", stock: 560, unit: "عدد", threshold: 250, tags: ["فلزی", "نقره‌ای", "ضدزنگ"], description: "مناسب کاپشن و مانتو؛ بسته‌های ۱۰۰تایی." },
-  { id: "RM-023", name: "سوزن چرخ صنعتی", category: "سوزن", stock: 80, unit: "بسته", threshold: 40, tags: ["DP×5", "سایز 90", "نوک معمولی"], description: "مناسب پارچه‌های متوسط تا ضخیم؛ هر بسته ۱۰ عدد." },
-];
+const initialOrders: Order[] = [];
+const initialGarments: Garment[] = [];
+const initialMaterials: RawMaterial[] = [];
 
 const money = (value: number) => `${value.toLocaleString("fa-IR")} تومان`;
 const number = (value: number) => value.toLocaleString("fa-IR");
@@ -120,11 +90,12 @@ const jalaliDate = (value: number, withTime = false) => new Intl.DateTimeFormat(
   year: "numeric", month: "long", day: "numeric", ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
 }).format(new Date(value));
 const shortJalaliDate = (value: number) => new Intl.DateTimeFormat("fa-IR-u-ca-persian", { month: "short", day: "numeric" }).format(new Date(value));
+const jalaliParts = (value: number) => { const parts = new Intl.DateTimeFormat("en-US-u-ca-persian", { year: "numeric", month: "numeric" }).formatToParts(new Date(value)); return { year: Number(parts.find(part => part.type === "year")?.value || 1405), month: Number(parts.find(part => part.type === "month")?.value || 1) }; };
 const loadStored = <T,>(key: string, fallback: T): T => {
   try { const saved = localStorage.getItem(key); return saved ? JSON.parse(saved) : fallback; } catch { return fallback; }
 };
 
-const blankOrder = (): OrderDraft => ({ customer: "", phone: "", city: "تهران", address: "", business: "", product: "", qty: 1, total: 0, location: { lat: 35.7219, lng: 51.3347, label: "تهران" } });
+const blankOrder = (): OrderDraft => ({ customer: "", phone: "", city: "", address: "", business: "", product: "", qty: 1, total: 0, location: { lat: 35.7219, lng: 51.3347, label: "مرکز نقشه" } });
 const blankProduct = (): ProductDraft => ({ type: "", fabric: "", color: "", stock: 0, reserved: 0, sku: "", details: "", weight: "", button: "", description: "" });
 const blankMaterial = (): MaterialDraft => ({ name: "", category: "پارچه", stock: 0, unit: "متر", threshold: 0, description: "" });
 
@@ -178,11 +149,14 @@ export default function Home() {
   const [orderDateFrom, setOrderDateFrom] = useState("");
   const [orderDateTo, setOrderDateTo] = useState("");
   const [inventoryTab, setInventoryTab] = useState<"garments" | "materials">("garments");
-  const [selectedOrderId, setSelectedOrderId] = useState<string>("ORD-1048");
+  const [selectedOrderId, setSelectedOrderId] = useState<string>("");
+  const currentJalali = jalaliParts(Date.now());
+  const [deliveryYear, setDeliveryYear] = useState(String(currentJalali.year));
+  const [deliveryMonth, setDeliveryMonth] = useState(String(currentJalali.month));
   const [toast, setToast] = useState("");
   const [deliveryOrderId, setDeliveryOrderId] = useState<string | null>(null);
   const [deliveryMapOrderId, setDeliveryMapOrderId] = useState<string | null>(null);
-  const [deliveryDraft, setDeliveryDraft] = useState({ method: "اسنپ‌باکس", cost: 550000, date: Date.now(), note: "تحویل سالم تأیید شد." });
+  const [deliveryDraft, setDeliveryDraft] = useState({ method: "", cost: 0, date: Date.now(), note: "" });
   const activityMutation=trpc.activities.create.useMutation();
   const customersQuery=trpc.crm.customers.useQuery();
   const ordersQuery=trpc.crm.orders.useQuery();
@@ -226,7 +200,7 @@ export default function Home() {
   const filteredDelivery = searchOrders(deliveryTab === "pending" ? pending : delivered);
   const garmentStock = garments.reduce((sum, product) => sum + product.stock, 0);
   const lowStock = materials.filter(item => item.stock <= item.threshold).length;
-  const monthlyDeliveryTotals = useMemo(() => { const now = new Date(); return Array.from({length:6}, (_,index) => { const month=new Date(now.getFullYear(),now.getMonth()-index,1); const total=delivered.filter(order => { const date=new Date(order.delivery?.completedAt ?? order.createdAt); return date.getFullYear()===month.getFullYear() && date.getMonth()===month.getMonth(); }).reduce((sum,order)=>sum+(order.delivery?.cost??0),0); return {label:new Intl.DateTimeFormat("fa-IR-u-ca-persian",{month:"long",year:"numeric"}).format(month),total}; }); }, [delivered]);
+  const selectedDeliverySummary = useMemo(() => delivered.reduce((summary, order) => { const timestamp = order.delivery?.completedAt; if (!timestamp) return summary; const parts = jalaliParts(timestamp); if (parts.year === Number(deliveryYear) && parts.month === Number(deliveryMonth)) { summary.total += order.delivery?.cost ?? 0; summary.count += 1; } return summary; }, { total: 0, count: 0 }), [delivered, deliveryYear, deliveryMonth]);
 
   const showToast = (message: string) => setToast(message);
   const logActivity = (text: string) => { try { const current=JSON.parse(localStorage.getItem("sepid-activities")||"[]"); localStorage.setItem("sepid-activities",JSON.stringify([{id:Date.now(),text,time:Date.now()},...current].slice(0,40))); } catch {} activityMutation.mutate({text}); };
@@ -258,7 +232,7 @@ export default function Home() {
       setOrderModal(false);
     } catch { showToast("ذخیره سفارش انجام نشد؛ اتصال دیتابیس را بررسی کنید."); }
   };
-  const openDeliveryConfirmation = (id: string) => { setDeliveryOrderId(id); setDeliveryDraft({ method: "اسنپ‌باکس", cost: 550000, date: Date.now(), note: "تحویل سالم تأیید شد." }); };
+  const openDeliveryConfirmation = (id: string) => { setDeliveryOrderId(id); setDeliveryDraft({ method: "", cost: 0, date: Date.now(), note: "" }); };
   const markDelivered = async (event: FormEvent) => {
     event.preventDefault();
     if (!deliveryOrderId) return;
@@ -308,23 +282,22 @@ export default function Home() {
   const DashboardPage = <>
     <PageHeading eyebrow={`امروز · ${jalaliDate(Date.now())}`} title="صبح بخیر، مدیر کارگاه" description="نمایی از سفارش‌ها، تحویل‌ها و موجودی امروز شما." action={undefined} />
     <section className="stats-grid">
-      <article className="stat-card green-card"><div className="stat-icon"><ClipboardList size={20} /></div><div><span>سفارش‌های فعال</span><strong>{number(pending.length)}</strong><small><ArrowUpLeft size={14} /> ۱۲٪ نسبت به هفته قبل</small></div></article>
-      <article className="stat-card peach-card"><div className="stat-icon"><Truck size={20} /></div><div><span>در انتظار تحویل</span><strong>{number(pending.length)}</strong><small>۳ سفارش آماده‌ی ارسال</small></div></article>
-      <article className="stat-card lavender-card"><div className="stat-icon"><Boxes size={20} /></div><div><span>موجودی پوشاک</span><strong>{number(garmentStock)}</strong><small>۴ مدل قابل تحویل</small></div></article>
-      <article className="stat-card yellow-card"><div className="stat-icon"><CircleDollarSign size={20} /></div><div><span>فروش این ماه</span><strong>{money(85300000)}</strong><small><ArrowUpLeft size={14} /> ۱۸٪ رشد فروش</small></div></article>
+      <article className="stat-card green-card"><div className="stat-icon"><ClipboardList size={20} /></div><div><span>سفارش‌های فعال</span><strong>{number(pending.length)}</strong><small>از داده‌های ثبت‌شده</small></div></article>
+      <article className="stat-card peach-card"><div className="stat-icon"><Truck size={20} /></div><div><span>در انتظار تحویل</span><strong>{number(pending.length)}</strong><small>سفارش آماده ارسال</small></div></article>
+      <article className="stat-card lavender-card"><div className="stat-icon"><Boxes size={20} /></div><div><span>موجودی پوشاک</span><strong>{number(garmentStock)}</strong><small>{number(garments.length)} مدل ثبت‌شده</small></div></article>
+      <article className="stat-card yellow-card"><div className="stat-icon"><CircleDollarSign size={20} /></div><div><span>فروش تحویل‌شده</span><strong>{money(delivered.reduce((sum, order) => sum + order.total, 0))}</strong><small>از داده‌های ثبت‌شده</small></div></article>
     </section>
     <section className="dashboard-grid">
       <OrderTable data={pending.slice(0, 3)} compact />
       <aside className="readiness-card">
         <div className="card-topline"><div><span className="eyebrow">نبض انبار</span><h3>وضعیت تأمین امروز</h3></div><Sparkles size={19} /></div>
-        <div className="inventory-hero"><div><span>پوشاک آماده</span><strong>{number(garmentStock)}<small> عدد</small></strong></div><div className="circle-meter"><span>۸۶٪</span></div></div>
-        <div className="need-row"><div className="need-dot warning" /><div><strong>نخ دوخت صنعتی</strong><span>به نقطه سفارش رسیده</span></div><b>{number(24)} قرقره</b></div>
-        <div className="need-row"><div className="need-dot okay" /><div><strong>پارچه کجراه</strong><span>موجودی ایمن</span></div><b>{number(182)} متر</b></div>
+        <div className="inventory-hero"><div><span>پوشاک آماده</span><strong>{number(garmentStock)}<small> عدد</small></strong></div><div className="circle-meter"><span>{garmentStock ? "ثبت‌شده" : "۰٪"}</span></div></div>
+        {materials.length ? materials.slice(0,2).map(item => <div className="need-row" key={item.id}><div className={`need-dot ${item.stock <= item.threshold ? "warning" : "okay"}`} /><div><strong>{item.name}</strong><span>{item.stock <= item.threshold ? "به نقطه سفارش رسیده" : "موجودی ایمن"}</span></div><b>{number(item.stock)} {item.unit}</b></div>) : <div className="empty-mini">هنوز ماده اولیه‌ای ثبت نشده است.</div>}
         <button className="text-button" onClick={() => setRoute("/inventory")}>مشاهده‌ی همه موجودی <ArrowDownLeft size={16} /></button>
       </aside>
     </section>
     <section className="location-strip">
-      <div className="location-copy"><div className="location-icon"><MapPin size={20} /></div><div><span>آخرین نقطه‌ی ثبت‌شده</span><h3>{selectedOrder?.location.label}</h3><p>{selectedOrder?.customer} · {selectedOrder?.business}</p></div><button className="outline-button" onClick={() => setRoute("/orders")}>مشاهده سفارش</button></div>
+      <div className="location-copy"><div className="location-icon"><MapPin size={20} /></div><div><span>آخرین نقطه‌ی ثبت‌شده</span><h3>{selectedOrder?.location.label || "هنوز لوکیشنی ثبت نشده است"}</h3><p>{selectedOrder ? `${selectedOrder.customer} · ${selectedOrder.business}` : "پس از ثبت اولین سفارش، موقعیت اینجا نمایش داده می‌شود."}</p></div><button className="outline-button" onClick={() => setRoute("/orders")}>مشاهده سفارش‌ها</button></div>
       <div className="map-art"><span className="map-route route-one" /><span className="map-route route-two" /><i className="map-point pin-one"><MapPin size={14} /></i><i className="map-point pin-two" /></div>
     </section>
   </>;
@@ -343,7 +316,7 @@ export default function Home() {
 
   const DeliveryPage = <>
     <PageHeading eyebrow="ثبت تاریخچه و هزینه ارسال" title="تحویل محصول" description="پس از ثبت سفارش، محصول به‌صورت خودکار وارد صف انتظار تحویل می‌شود." />
-    <div className="delivery-summary-grid">{monthlyDeliveryTotals.slice(0,3).map((item,index)=><div className="delivery-summary-box" key={item.label}><span>{index===0?"دریافتی این ماه":item.label}</span><strong>{money(item.total)}</strong><small>{index===0?`${number(delivered.filter(order=>{const date=new Date(order.delivery?.completedAt??order.createdAt);const now=new Date();return date.getFullYear()===now.getFullYear()&&date.getMonth()===now.getMonth()}).length)} تحویل ثبت‌شده`:"جمع هزینه ارسال"}</small></div>)}</div><div className="delivery-tabs"><button className={deliveryTab === "pending" ? "selected" : ""} onClick={() => setDeliveryTab("pending")}><Clock3 size={17} /> در انتظار تحویل <b>{number(pending.length)}</b></button><button className={deliveryTab === "delivered" ? "selected" : ""} onClick={() => setDeliveryTab("delivered")}><PackageCheck size={17} /> تحویل داده‌شده <b>{number(delivered.length)}</b></button></div>
+    <div className="delivery-period-panel"><div><span className="eyebrow">گزارش هزینه ارسال</span><h3>ماه موردنظر را انتخاب کنید</h3><p>مبلغ دریافتی و تعداد تحویل‌ها فقط برای ماه انتخاب‌شده نمایش داده می‌شود.</p></div><div className="delivery-period-fields"><label>سال شمسی<select value={deliveryYear} onChange={event=>setDeliveryYear(event.target.value)}>{Array.from({length:51},(_,index)=>1450-index).map(year=><option key={year} value={year}>{year.toLocaleString("fa-IR")}</option>)}</select></label><label>ماه<select value={deliveryMonth} onChange={event=>setDeliveryMonth(event.target.value)}>{["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"].map((month,index)=><option key={month} value={index+1}>{month}</option>)}</select></label></div></div><div className="delivery-summary-grid"><div className="delivery-summary-box"><span>دریافتی ماه انتخاب‌شده</span><strong>{money(selectedDeliverySummary.total)}</strong><small>{number(selectedDeliverySummary.count)} تحویل ثبت‌شده</small></div><div className="delivery-summary-box"><span>ماه گزارش</span><strong>{["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"][Number(deliveryMonth)-1]} {Number(deliveryYear).toLocaleString("fa-IR")}</strong><small>تقویم شمسی</small></div></div><div className="delivery-tabs"><button className={deliveryTab === "pending" ? "selected" : ""} onClick={() => setDeliveryTab("pending")}><Clock3 size={17} /> در انتظار تحویل <b>{number(pending.length)}</b></button><button className={deliveryTab === "delivered" ? "selected" : ""} onClick={() => setDeliveryTab("delivered")}><PackageCheck size={17} /> تحویل داده‌شده <b>{number(delivered.length)}</b></button></div>
     <section className="toolbar delivery-toolbar">{commonSearch}<div className="toolbar-actions"><button className="filter-button"><Filter size={17} /> شهر و صنف <ChevronDown size={15} /></button><button className="filter-button"><CalendarDays size={17} /> بازه تاریخ <ChevronDown size={15} /></button></div></section>
     <div className="delivery-list">{filteredDelivery.map((order,index) => <article className="delivery-card" key={`delivery-card-${order.id}-${order.phone||order.customer||""}-${index}`}>
       <div className="delivery-card-head"><div className="delivery-order-chip"><Package size={16} /> {order.id}</div><span>{jalaliDate(order.createdAt)}</span></div>
@@ -366,7 +339,7 @@ export default function Home() {
 
     <Modal open={Boolean(deliveryMapOrderId)} onClose={() => setDeliveryMapOrderId(null)} title="لوکیشن ثبت‌شده سفارش" subtitle="موقعیتی که هنگام ثبت سفارش برای این مشتری ذخیره شده است.">{(()=>{const order=orders.find(item=>item.id===deliveryMapOrderId);return order?<div className="delivery-map-modal"><MiniMap location={order.location}/><div className="selected-location-row"><MapPin size={16}/><span>{order.location.label}</span></div><p>{order.customer} · {order.address}</p></div>:null})()}</Modal>
     <Modal open={Boolean(deliveryOrderId)} onClose={() => setDeliveryOrderId(null)} title="ثبت تحویل محصول" subtitle="هزینه باربری، روش ارسال، تاریخ و توضیحات در سابقه این سفارش ذخیره می‌شود.">
-      <form className="modal-form" onSubmit={markDelivered}><div className="form-grid two"><label>نوع ارسال / باربری<select value={deliveryDraft.method} onChange={e => setDeliveryDraft({ ...deliveryDraft, method: e.target.value })}><option>اسنپ‌باکس</option><option>باربری</option><option>پست پیشتاز</option><option>پیک اختصاصی</option><option>تحویل حضوری</option></select></label><label>مبلغ دریافتی بابت ارسال (تومان)<input type="number" min="0" value={deliveryDraft.cost} onChange={e => setDeliveryDraft({ ...deliveryDraft, cost: Number(e.target.value) })} /></label><label>تاریخ و زمان تحویل<input value={jalaliDate(deliveryDraft.date, true)} readOnly /></label><div className="field-static"><span>تاریخ شمسی ثبت‌شده</span><strong>{jalaliDate(deliveryDraft.date, true)}</strong></div><label className="span-two">توضیحات تحویل<textarea value={deliveryDraft.note} onChange={e => setDeliveryDraft({ ...deliveryDraft, note: e.target.value })} placeholder="رسید، نام تحویل‌گیرنده، وضعیت بسته و ..." /></label></div><div className="modal-actions"><button type="button" className="outline-button" onClick={() => setDeliveryOrderId(null)}>انصراف</button><button className="primary-button" type="submit"><Check size={17} /> ثبت تحویل و انتقال سفارش</button></div></form>
+      <form className="modal-form" onSubmit={markDelivered}><div className="form-grid two"><label>نوع ارسال / باربری<select value={deliveryDraft.method} onChange={e => setDeliveryDraft({ ...deliveryDraft, method: e.target.value })}><option value="">انتخاب روش ارسال</option><option>اسنپ‌باکس</option><option>باربری</option><option>پست پیشتاز</option><option>پیک اختصاصی</option><option>تحویل حضوری</option></select></label><label>مبلغ دریافتی بابت ارسال (تومان)<input type="number" min="0" value={deliveryDraft.cost} onChange={e => setDeliveryDraft({ ...deliveryDraft, cost: Number(e.target.value) })} /></label><label>تاریخ و زمان تحویل<input value={jalaliDate(deliveryDraft.date, true)} readOnly /></label><div className="field-static"><span>تاریخ شمسی ثبت‌شده</span><strong>{jalaliDate(deliveryDraft.date, true)}</strong></div><label className="span-two">توضیحات تحویل<textarea value={deliveryDraft.note} onChange={e => setDeliveryDraft({ ...deliveryDraft, note: e.target.value })} placeholder="رسید، نام تحویل‌گیرنده، وضعیت بسته و ..." /></label></div><div className="modal-actions"><button type="button" className="outline-button" onClick={() => setDeliveryOrderId(null)}>انصراف</button><button className="primary-button" type="submit"><Check size={17} /> ثبت تحویل و انتقال سفارش</button></div></form>
     </Modal>
 
     <Modal open={orderModal} onClose={() => setOrderModal(false)} title={editOrderId ? "ویرایش سفارش" : "ثبت سفارش جدید"} subtitle="تاریخ سفارش به‌صورت خودکار بر اساس تقویم شمسی ثبت می‌شود." wide>
