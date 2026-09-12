@@ -169,6 +169,9 @@ export default function Home() {
   const [editMaterialId, setEditMaterialId] = useState<string | null>(null);
   const [deliveryTab, setDeliveryTab] = useState<OrderStatus>("pending");
   const [query, setQuery] = useState("");
+  const [orderCustomerQuery, setOrderCustomerQuery] = useState("");
+  const [orderDateFrom, setOrderDateFrom] = useState("");
+  const [orderDateTo, setOrderDateTo] = useState("");
   const [inventoryTab, setInventoryTab] = useState<"garments" | "materials">("garments");
   const [selectedOrderId, setSelectedOrderId] = useState<string>("ORD-1048");
   const [toast, setToast] = useState("");
@@ -186,6 +189,12 @@ export default function Home() {
   const selectedOrder = orders.find(order => order.id === selectedOrderId) ?? orders[0];
   const searchOrders = (data: Order[]) => data.filter(order => `${order.customer} ${order.city} ${order.business} ${order.product} ${order.phone}`.includes(query.trim()));
   const filteredOrders = searchOrders(orders);
+  const filteredOrderList = useMemo(() => orders.filter(order => {
+    const customerMatch = order.customer.toLocaleLowerCase("fa-IR").includes(orderCustomerQuery.trim().toLocaleLowerCase("fa-IR"));
+    const fromMatch = !orderDateFrom || order.createdAt >= new Date(`${orderDateFrom}T00:00:00`).getTime();
+    const toMatch = !orderDateTo || order.createdAt <= new Date(`${orderDateTo}T23:59:59`).getTime();
+    return customerMatch && fromMatch && toMatch;
+  }), [orders, orderCustomerQuery, orderDateFrom, orderDateTo]);
   const filteredDelivery = searchOrders(deliveryTab === "pending" ? pending : delivered);
   const garmentStock = garments.reduce((sum, product) => sum + product.stock, 0);
   const lowStock = materials.filter(item => item.stock <= item.threshold).length;
@@ -274,8 +283,8 @@ export default function Home() {
 
   const OrdersPage = <>
     <PageHeading eyebrow="ثبت، پیگیری و ویرایش" title="سفارش‌ها" description="هر سفارش با تاریخ شمسی و موقعیت دقیق مشتری در اینجا نگهداری می‌شود." action={<button className="primary-button" onClick={openNewOrder}><Plus size={18} /> ثبت سفارش جدید</button>} />
-    <section className="toolbar">{commonSearch}<div className="toolbar-actions"><button className="filter-button"><Filter size={17} /> همه شهرها <ChevronDown size={15} /></button><button className="filter-button"><CalendarDays size={17} /> تاریخ شمسی <ChevronDown size={15} /></button></div></section>
-    <section className="orders-map-layout">{OrderTable({ data: filteredOrders })}<aside className="order-detail-card">
+    <section className="order-filter-panel"><div className="order-filter-search"><Search size={18} /><input value={orderCustomerQuery} onChange={e => setOrderCustomerQuery(e.target.value)} placeholder="جستجو بر اساس نام مشتری..." /><button type="button" className="clear-filter" onClick={() => setOrderCustomerQuery("")} aria-label="پاک کردن جستجو">{orderCustomerQuery ? <X size={15} /> : null}</button></div><div className="order-date-filter"><CalendarDays size={17} /><label>از تاریخ<input type="date" value={orderDateFrom} onChange={e => setOrderDateFrom(e.target.value)} /></label><span>تا</span><label>تا تاریخ<input type="date" value={orderDateTo} onChange={e => setOrderDateTo(e.target.value)} /></label></div><button type="button" className="filter-reset" onClick={() => { setOrderCustomerQuery(""); setOrderDateFrom(""); setOrderDateTo(""); }}>حذف فیلترها</button></section><div className="order-filter-result">{filteredOrderList.length.toLocaleString("fa-IR")} سفارش پیدا شد{(orderCustomerQuery || orderDateFrom || orderDateTo) && <span> · فیلتر فعال است</span>}</div>
+    <section className="orders-map-layout">{OrderTable({ data: filteredOrderList })}<aside className="order-detail-card">
       {selectedOrder && <><div className="detail-title"><div><span className="eyebrow">جزئیات سفارش</span><h3>{selectedOrder.id}</h3></div><button className="icon-button" onClick={() => openEditOrder(selectedOrder)}><Edit3 size={17} /></button></div>
       <div className="detail-customer"><div className="customer-avatar large">{selectedOrder.customer.slice(0, 1)}</div><div><strong>{selectedOrder.customer}</strong><span>{selectedOrder.phone}</span></div></div>
       <div className="map-frame"><MiniMap location={selectedOrder.location} /><div className="map-label"><MapPin size={15} /><span>{selectedOrder.location.label}</span></div></div>

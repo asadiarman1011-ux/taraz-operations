@@ -1,0 +1,13 @@
+from pathlib import Path
+p=Path('/home/ubuntu/taraz-operations/client/src/pages/Home.tsx')
+s=p.read_text()
+s=s.replace('  const [query, setQuery] = useState("");', '  const [query, setQuery] = useState("");\n  const [orderCustomerQuery, setOrderCustomerQuery] = useState("");\n  const [orderDateFrom, setOrderDateFrom] = useState("");\n  const [orderDateTo, setOrderDateTo] = useState("");')
+s=s.replace('  const filteredOrders = searchOrders(orders);', '  const filteredOrders = searchOrders(orders);\n  const filteredOrderList = useMemo(() => orders.filter(order => {\n    const customerMatch = order.customer.toLocaleLowerCase("fa-IR").includes(orderCustomerQuery.trim().toLocaleLowerCase("fa-IR"));\n    const fromMatch = !orderDateFrom || order.createdAt >= new Date(`${orderDateFrom}T00:00:00`).getTime();\n    const toMatch = !orderDateTo || order.createdAt <= new Date(`${orderDateTo}T23:59:59`).getTime();\n    return customerMatch && fromMatch && toMatch;\n  }), [orders, orderCustomerQuery, orderDateFrom, orderDateTo]);')
+old='''    <section className="toolbar">{commonSearch}<div className="toolbar-actions"><button className="filter-button"><Filter size={17} /> همه شهرها <ChevronDown size={15} /></button><button className="filter-button"><CalendarDays size={17} /> تاریخ شمسی <ChevronDown size={15} /></button></div></section>
+    <section className="orders-map-layout">{OrderTable({ data: filteredOrders })}'''
+new='''    <section className="order-filter-panel"><div className="order-filter-search"><Search size={18} /><input value={orderCustomerQuery} onChange={e => setOrderCustomerQuery(e.target.value)} placeholder="جستجو بر اساس نام مشتری..." /><button type="button" className="clear-filter" onClick={() => setOrderCustomerQuery("")} aria-label="پاک کردن جستجو">{orderCustomerQuery ? <X size={15} /> : null}</button></div><div className="order-date-filter"><CalendarDays size={17} /><label>از تاریخ<input type="date" value={orderDateFrom} onChange={e => setOrderDateFrom(e.target.value)} /></label><span>تا</span><label>تا تاریخ<input type="date" value={orderDateTo} onChange={e => setOrderDateTo(e.target.value)} /></label></div><button type="button" className="filter-reset" onClick={() => { setOrderCustomerQuery(""); setOrderDateFrom(""); setOrderDateTo(""); }}>حذف فیلترها</button></section><div className="order-filter-result">{filteredOrderList.length.toLocaleString("fa-IR")} سفارش پیدا شد{(orderCustomerQuery || orderDateFrom || orderDateTo) && <span> · فیلتر فعال است</span>}</div>
+    <section className="orders-map-layout">{OrderTable({ data: filteredOrderList })}'''
+if old not in s: raise SystemExit('orders toolbar marker not found')
+s=s.replace(old,new,1)
+p.write_text(s)
+print('order filters added')
