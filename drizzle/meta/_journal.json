@@ -22,6 +22,13 @@
       "when": 1789042971100,
       "tag": "0002_perpetual_king_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1789200145423,
+      "tag": "0003_bent_absorbing_man",
+      "breakpoints": true
     }
   ]
 }
