@@ -318,7 +318,6 @@ export default function Home() {
   </>;
 
   return <DashboardLayout><div className="workspace">
-    <header className="topbar"><div className="mobile-brand"><div className="brand-mark"><ArchiveIcon /></div><strong>تراز</strong></div><div className="topbar-date"><CalendarDays size={17} /><span>{jalaliDate(Date.now())}</span></div><div className="topbar-actions"><button className="notification"><Bell size={19} /><i /></button><div className="avatar small">م</div><ChevronDown size={16} /></div></header>
     <div className="page-content">{page === "dashboard" ? DashboardPage : page === "orders" ? OrdersPage : page === "delivery" ? DeliveryPage : InventoryPage}</div>
     {toast && <div className="toast"><CheckCircle2 size={18} />{toast}</div>}
 
