@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Clock3, Edit3, FileText, MapPin, Package, Truck } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, Download, Edit3, FileText, MapPin, Package, Printer, Truck } from "lucide-react";
 import { useLocation } from "wouter";
 import { MapView } from "@/components/Map";
 import { trpc } from "@/lib/trpc";
@@ -16,8 +16,9 @@ export default function OrderDetails(){
   if(!detail)return <div className="order-detail-page"><div className="detail-empty"><Package size={30}/><h2>سفارش پیدا نشد</h2><p>این سفارش حذف شده یا شناسه آن معتبر نیست.</p><button className="primary-button" onClick={()=>setLocation("/orders")}>بازگشت به سفارش‌ها</button></div></div>;
   const {order,customer,history}=detail;
   let items:any[]=[];try{items=JSON.parse(order.itemsJson||"[]")}catch{items=[]}
+  const printOrder=()=>{const previousTitle=document.title;document.title=`پیش‌فاکتور سفارش ${order.id}`;window.setTimeout(()=>{window.print();window.setTimeout(()=>{document.title=previousTitle},500)},50)};
   return <div dir="rtl" className="order-detail-page">
-    <div className="detail-page-head"><button className="back-button" onClick={()=>setLocation("/orders")}><ArrowRight size={18}/> بازگشت به سفارش‌ها</button><div><span className="eyebrow">پرونده کامل سفارش</span><h1>سفارش #{order.id}</h1><p>تمام مشخصات خرید، تحویل و تاریخچه تغییرات در یک صفحه.</p></div><button className="primary-button" onClick={()=>setLocation(`/orders/new?order=${order.id}`)}><Edit3 size={17}/> ویرایش سفارش</button></div>
+    <div className="detail-page-head"><button className="back-button" onClick={()=>setLocation("/orders")}><ArrowRight size={18}/> بازگشت به سفارش‌ها</button><div><span className="eyebrow">پرونده کامل سفارش</span><h1>سفارش #{order.id}</h1><p>تمام مشخصات خرید، تحویل و تاریخچه تغییرات در یک صفحه.</p></div><div className="detail-page-actions"><button className="outline-button" onClick={printOrder}><Printer size={17}/> چاپ مستقیم</button><button className="outline-button" onClick={printOrder}><Download size={17}/> دانلود PDF</button><button className="primary-button" onClick={()=>setLocation(`/orders/new?order=${order.id}`)}><Edit3 size={17}/> ویرایش سفارش</button></div></div>
     <div className="detail-status-strip"><span className={order.status==="delivered"?"status green":"status amber"}>{order.status==="delivered"?<CheckCircle2 size={15}/>:<Clock3 size={15}/>} {order.status==="delivered"?"تحویل داده‌شده":"در انتظار تحویل"}</span><span><FileText size={15}/> تاریخ سفارش: {order.jalaliDate}</span><strong>{money(order.total)}</strong></div>
     <div className="order-detail-grid">
       <main>
