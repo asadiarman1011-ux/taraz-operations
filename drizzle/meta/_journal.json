@@ -36,6 +36,20 @@
       "when": 1789205993191,
       "tag": "0004_lazy_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1789209551808,
+      "tag": "0005_sudden_red_skull",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1789209725965,
+      "tag": "0006_yellow_starjammers",
+      "breakpoints": true
     }
   ]
 }

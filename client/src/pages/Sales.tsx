@@ -13,8 +13,8 @@ const printInvoice=(order:Order,customerName:string)=>{let items:any[]=[];try{it
 
 export default function Sales(){
  const [,setLocation]=useLocation();
- const customersQuery=trpc.crm.customers.useQuery();
- const ordersQuery=trpc.crm.orders.useQuery();
+ const customersQuery=trpc.crm.customers.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
+ const ordersQuery=trpc.crm.orders.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
  const updateCustomer=trpc.crm.updateCustomer.useMutation();
  const utils=trpc.useUtils();
  const customers=(customersQuery.data||[]) as Customer[];
