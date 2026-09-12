@@ -104,7 +104,7 @@ function loadMapScript(): Promise<void> {
   mapScriptPromise = new Promise((resolve, reject) => {
     const script = existing ?? document.createElement("script");
     script.id = "sepid-google-maps-script";
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly`;
+    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker`;
     script.async = true;
     script.defer = true;
     script.crossOrigin = "anonymous";
@@ -141,6 +141,8 @@ export function MapView({
       zoom: initialZoom,
       center: initialCenter,
       mapTypeControl: true,
+      clickableIcons: false,
+      gestureHandling: "greedy",
       fullscreenControl: true,
       zoomControl: true,
       streetViewControl: true,
