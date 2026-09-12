@@ -27,6 +27,7 @@ import {
   Tag,
   Truck,
   X,
+  FileText,
 } from "lucide-react";
 import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -48,6 +49,8 @@ type Order = {
   createdAt: number;
   location: LocationPoint;
   delivery?: { completedAt: number; cost: number; method: string; note: string };
+  jalaliDate?: string;
+  notes?: string;
   customerId?: number;
 };
 type Garment = {
@@ -199,7 +202,7 @@ export default function Home() {
       try { items = JSON.parse(row.itemsJson || "[]"); } catch { items = []; }
       const item = items[0] || {};
       const qty = Number(item.qty || item.sizes?.reduce((sum:number, size:any) => sum + Number(size.qty || 0), 0) || 0);
-      return { id: `DB-${row.id}`, customerId: row.customerId, customer: customer.name || "مشتری ثبت‌شده", phone: customer.phone || "", city: customer.city || "", address: row.address || customer.address || "", business: customer.business || "", product: item.product || item.type || "محصول سفارش", qty, total: Number(row.total || 0), status: row.status, createdAt: new Date(row.createdAt).getTime(), location: { lat: Number(row.lat || customer.lat || 35.7219), lng: Number(row.lng || customer.lng || 51.3347), label: row.address || customer.address || "لوکیشن ثبت‌شده" } };
+      return { id: `DB-${row.id}`, customerId: row.customerId, customer: customer.name || "مشتری ثبت‌شده", phone: customer.phone || "", city: customer.city || "", address: row.address || customer.address || "", business: customer.business || "", product: item.product || item.type || "محصول سفارش", qty, total: Number(row.total || 0), status: row.status, createdAt: new Date(row.createdAt).getTime(), jalaliDate: row.jalaliDate, notes: row.notes || "", location: { lat: Number(row.lat || customer.lat || 35.7219), lng: Number(row.lng || customer.lng || 51.3347), label: row.address || customer.address || "لوکیشن ثبت‌شده" }, delivery: row.status === "delivered" ? { completedAt: row.deliveryAt ? new Date(row.deliveryAt).getTime() : new Date(row.createdAt).getTime(), cost: Number(row.deliveryCost || 0), method: row.deliveryMethod || "ثبت نشده", note: row.deliveryNote || "" } : undefined };
     });
     setOrders(sharedOrders);
     if (!selectedOrderId || !sharedOrders.some(order => order.id === selectedOrderId)) setSelectedOrderId(sharedOrders[0]?.id || "");
@@ -260,7 +263,7 @@ export default function Home() {
     event.preventDefault();
     if (!deliveryOrderId) return;
     try {
-      if (deliveryOrderId.startsWith("DB-")) await updateOrderMutation.mutateAsync({ id: Number(deliveryOrderId.replace("DB-", "")), data: { status: "delivered" } });
+      if (deliveryOrderId.startsWith("DB-")) await updateOrderMutation.mutateAsync({ id: Number(deliveryOrderId.replace("DB-", "")), data: { status: "delivered", deliveryMethod: deliveryDraft.method, deliveryCost: deliveryDraft.cost, deliveryAt: new Date(deliveryDraft.date), deliveryNote: deliveryDraft.note } });
       setOrders(data => data.map(order => order.id === deliveryOrderId ? { ...order, status: "delivered", delivery: { completedAt: deliveryDraft.date, cost: deliveryDraft.cost, method: deliveryDraft.method, note: deliveryDraft.note } } : order));
       await utils.crm.orders.invalidate();
       setDeliveryOrderId(null); setDeliveryTab("delivered"); showToast("هزینه و اطلاعات ارسال ثبت شد؛ سفارش تحویل‌شده شد."); logActivity(`تحویل سفارش ${deliveryOrderId} ثبت شد`);
@@ -296,7 +299,7 @@ export default function Home() {
         {!compact && <div className="order-product"><span>{order.product}</span><small>{number(order.qty)} عدد · {order.id}</small></div>}
         <div className="order-date"><span>{shortJalaliDate(order.createdAt)}</span><small>{order.status === "pending" ? "در انتظار تحویل" : "تحویل شده"}</small></div>
         <div className="order-amount"><strong>{money(order.total)}</strong>{order.status === "pending" ? <span className="status amber"><Clock3 size={13} /> آماده‌سازی</span> : <span className="status green"><Check size={13} /> تحویل شده</span>}</div>
-        <button className="row-menu" onClick={event => { event.stopPropagation(); openEditOrder(order); }} aria-label="ویرایش سفارش"><Edit3 size={16} /></button>
+        <button className="row-menu" onClick={event => { event.stopPropagation(); if (order.id.startsWith("DB-")) setRoute(`/orders/${order.id.replace("DB-", "")}`); else openEditOrder(order); }} aria-label="مشاهده جزئیات سفارش"><FileText size={16} /></button>
       </div>)}
       {data.length === 0 && <div className="empty-state"><Package size={25} /><strong>موردی با این جستجو پیدا نشد.</strong><span>عبارت یا فیلتر را تغییر دهید.</span></div>}
     </div>
@@ -344,7 +347,7 @@ export default function Home() {
     <section className="toolbar delivery-toolbar">{commonSearch}<div className="toolbar-actions"><button className="filter-button"><Filter size={17} /> شهر و صنف <ChevronDown size={15} /></button><button className="filter-button"><CalendarDays size={17} /> بازه تاریخ <ChevronDown size={15} /></button></div></section>
     <div className="delivery-list">{filteredDelivery.map((order,index) => <article className="delivery-card" key={`delivery-card-${order.id}-${order.phone||order.customer||""}-${index}`}>
       <div className="delivery-card-head"><div className="delivery-order-chip"><Package size={16} /> {order.id}</div><span>{jalaliDate(order.createdAt)}</span></div>
-      <div className="delivery-main"><div className="customer-avatar">{order.customer.slice(0, 1)}</div><div className="delivery-customer"><strong>{order.customer}</strong><span>{order.phone} · {order.business}</span><p><MapPin size={14} /> {order.address}</p></div><div className="delivery-product"><span>اطلاعات خرید</span><strong>{order.product}</strong><p>{number(order.qty)} عدد · {money(order.total)}</p></div><button type="button" className="outline-button compact delivery-location-button" onClick={()=>setDeliveryMapOrderId(order.id)}><MapPin size={15}/> مشاهده لوکیشن</button></div>
+      <div className="delivery-main"><div className="customer-avatar">{order.customer.slice(0, 1)}</div><div className="delivery-customer"><strong>{order.customer}</strong><span>{order.phone} · {order.business}</span><p><MapPin size={14} /> {order.address}</p></div><div className="delivery-product"><span>اطلاعات خرید</span><strong>{order.product}</strong><p>{number(order.qty)} عدد · {money(order.total)}</p></div><button type="button" className="outline-button compact delivery-location-button" onClick={()=>setDeliveryMapOrderId(order.id)}><MapPin size={15}/> مشاهده لوکیشن</button>{order.id.startsWith("DB-")&&<button type="button" className="outline-button compact delivery-location-button" onClick={()=>setRoute(`/orders/${order.id.replace("DB-", "")}`)}><FileText size={15}/> جزئیات کامل</button>}</div>
       {order.status === "pending" ? <div className="delivery-action"><div><Clock3 size={17} /><span>محصول آماده شد؟ هزینه، نوع ارسال، تاریخ و توضیحات را ثبت کنید.</span></div><button className="primary-button compact" onClick={() => openDeliveryConfirmation(order.id)}><CheckCircle2 size={17} /> ثبت تحویل</button></div> : <div className="delivery-history"><div><Truck size={17} /><span>ارسال با <strong>{order.delivery?.method}</strong> · {jalaliDate(order.delivery?.completedAt ?? order.createdAt, true)}</span></div><div><CircleDollarSign size={17} /><span>مبلغ دریافتی بابت ارسال: <strong>{money(order.delivery?.cost ?? 0)}</strong></span></div><p>{order.delivery?.note}</p><button type="button" className="outline-button compact delivery-location-button" onClick={()=>setDeliveryMapOrderId(order.id)}><MapPin size={15}/> مشاهده لوکیشن ثبت‌شده</button></div>}
     </article>)}{filteredDelivery.length === 0 && <div className="empty-state large-empty"><Truck size={28} /><strong>سفارشی در این بخش نیست.</strong><span>با تغییر تب یا عبارت جستجو، سفارش‌ها را پیدا کنید.</span></div>}</div>
   </>;

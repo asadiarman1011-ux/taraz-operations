@@ -7,12 +7,14 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "@/pages/Home";
 import Sales from "@/pages/Sales";
 import OrderEntry from "@/pages/OrderEntry";
+import OrderDetails from "@/pages/OrderDetails";
 import Access from "@/pages/Access";
 import "./factory-pages.css";
 import DashboardLayout from "./components/DashboardLayout";
 
 const SalesPage = () => <DashboardLayout><Sales /></DashboardLayout>;
 const OrderEntryPage = () => <DashboardLayout><OrderEntry /></DashboardLayout>;
+const OrderDetailsPage = () => <DashboardLayout><OrderDetails /></DashboardLayout>;
 const AccessPage = () => <DashboardLayout><Access /></DashboardLayout>;
 
 function Router() {
@@ -22,6 +24,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/sales"} component={SalesPage} />
       <Route path={"/orders/new"} component={OrderEntryPage} />
+      <Route path={"/orders/:id"} component={OrderDetailsPage} />
       <Route path={"/orders"} component={Home} />
       <Route path={"/delivery"} component={Home} />
       <Route path={"/inventory"} component={Home} />

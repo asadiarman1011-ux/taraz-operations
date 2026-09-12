@@ -29,6 +29,13 @@
       "when": 1789200145423,
       "tag": "0003_bent_absorbing_man",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1789205993191,
+      "tag": "0004_lazy_roughhouse",
+      "breakpoints": true
     }
   ]
 }
