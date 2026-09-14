@@ -50,6 +50,13 @@
       "when": 1789209725965,
       "tag": "0006_yellow_starjammers",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1789386881096,
+      "tag": "0007_even_plazm",
+      "breakpoints": true
     }
   ]
 }

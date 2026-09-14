@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { activities, customers, InsertUser, inventoryItems, orderHistory, orders, users } from "../drizzle/schema";
+import { activities, customers, InsertUser, inventoryItems, inventoryMovements, orderHistory, orders, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -23,5 +23,7 @@ export async function createActivity(text:string){const db=await getDb();if(!db)
 export async function listInventoryItems(){const db=await getDb();if(!db)return [];return db.select().from(inventoryItems).orderBy(desc(inventoryItems.updatedAt))}
 export async function createInventoryItem(input:typeof inventoryItems.$inferInsert){const db=await getDb();if(!db)throw new Error("Database is not available");const result=await db.insert(inventoryItems).values(input);const id=Number(result[0].insertId);const rows=await db.select().from(inventoryItems).where(eq(inventoryItems.id,id)).limit(1);return rows[0]}
 export async function updateInventoryItem(id:number,input:Partial<typeof inventoryItems.$inferInsert>){const db=await getDb();if(!db)throw new Error("Database is not available");await db.update(inventoryItems).set(input).where(eq(inventoryItems.id,id));const rows=await db.select().from(inventoryItems).where(eq(inventoryItems.id,id)).limit(1);return rows[0]}
+export async function listInventoryMovements(inventoryItemId:number){const db=await getDb();if(!db)return [];return db.select().from(inventoryMovements).where(eq(inventoryMovements.inventoryItemId,inventoryItemId)).orderBy(desc(inventoryMovements.createdAt))}
+export async function createInventoryMovement(input:typeof inventoryMovements.$inferInsert){const db=await getDb();if(!db)throw new Error("Database is not available");const result=await db.insert(inventoryMovements).values(input);const id=Number(result[0].insertId);const rows=await db.select().from(inventoryMovements).where(eq(inventoryMovements.id,id)).limit(1);return rows[0]}
 export async function listUsers(){const db=await getDb();if(!db)return [];return db.select({id:users.id,name:users.name,email:users.email,role:users.role,permissionsJson:users.permissionsJson,createdAt:users.createdAt,updatedAt:users.updatedAt}).from(users).orderBy(desc(users.updatedAt))}
 export async function updateUser(id:number,input:Partial<typeof users.$inferInsert>){const db=await getDb();if(!db)throw new Error("Database is not available");await db.update(users).set(input).where(eq(users.id,id));const rows=await db.select({id:users.id,name:users.name,email:users.email,role:users.role,permissionsJson:users.permissionsJson,createdAt:users.createdAt,updatedAt:users.updatedAt}).from(users).where(eq(users.id,id)).limit(1);return rows[0]}
