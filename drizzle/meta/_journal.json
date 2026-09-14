@@ -71,6 +71,13 @@
       "when": 1789387579453,
       "tag": "0009_skinny_frog_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1789390597293,
+      "tag": "0010_serious_leo",
+      "breakpoints": true
     }
   ]
 }
