@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Building2, CheckCircle2, ChevronDown, Clock3, Edit3, Filter, History, MapPin, MoreHorizontal, Phone, Plus, Search, ShieldCheck, Star, UserRoundCheck, UsersRound } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
 export type CustomerStatus = "ثابت" | "غیر ثابت" | "نیاز به پیگیری" | "در حال پیگیری";
 type Customer = { id:number; name:string; phone:string; business:string; city:string; address:string; status:CustomerStatus; note?:string|null; lat?:number|null; lng?:number|null; createdAt?:Date|string; updatedAt?:Date|string };
@@ -13,8 +14,9 @@ const printInvoice=(order:Order,customerName:string)=>{let items:any[]=[];try{it
 
 export default function Sales(){
  const [,setLocation]=useLocation();
- const customersQuery=trpc.crm.customers.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
- const ordersQuery=trpc.crm.orders.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
+ const refreshInterval=useRefreshInterval();
+ const customersQuery=trpc.crm.customers.useQuery(undefined,{refetchInterval:refreshInterval,refetchIntervalInBackground:true});
+ const ordersQuery=trpc.crm.orders.useQuery(undefined,{refetchInterval:refreshInterval,refetchIntervalInBackground:true});
  const updateCustomer=trpc.crm.updateCustomer.useMutation();
  const utils=trpc.useUtils();
  const customers=(customersQuery.data||[]) as Customer[];

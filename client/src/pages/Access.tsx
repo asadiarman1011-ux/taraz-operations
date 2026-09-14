@@ -1,6 +1,7 @@
 import { Check, ChevronDown, Eye, EyeOff, KeyRound, LoaderCircle, ShieldCheck, UsersRound } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 const sections=["فروش و مشتری‌ها","ثبت سفارش","تحویل محصول","انبار","گزارش‌ها","مدیریت کاربران"] as const;
 type Permission="view"|"edit"|"none";
 type User={id:number;name:string|null;email:string|null;role:"user"|"admin";permissionsJson:string|null};
@@ -8,7 +9,7 @@ const modeLabel={view:"فقط مشاهده",edit:"دسترسی کامل",none:"�
 const defaultPermissions=(role:"user"|"admin")=>Object.fromEntries(sections.map(section=>[section,role==="admin"?"edit":"none"])) as Record<string,Permission>;
 const parsePermissions=(user:User)=>{try{return {...defaultPermissions(user.role),...(user.permissionsJson?JSON.parse(user.permissionsJson):{})} as Record<string,Permission>}catch{return defaultPermissions(user.role)}};
 export default function Access(){
- const usersQuery=trpc.users.list.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true}); const updateUser=trpc.users.update.useMutation(); const utils=trpc.useUtils();
+ const refreshInterval=useRefreshInterval(); const usersQuery=trpc.users.list.useQuery(undefined,{refetchInterval:refreshInterval,refetchIntervalInBackground:true}); const updateUser=trpc.users.update.useMutation(); const utils=trpc.useUtils();
  const users=(usersQuery.data||[]) as User[]; const [selectedId,setSelectedId]=useState(0); const [notice,setNotice]=useState("");
  useEffect(()=>{if(users.length&&!users.some(user=>user.id===selectedId))setSelectedId(users[0].id)},[users,selectedId]);
  const selected=users.find(user=>user.id===selectedId); const permissions=useMemo(()=>selected?parsePermissions(selected):{},[selected]);

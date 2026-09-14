@@ -41,6 +41,7 @@ import {
 import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
 type LocationPoint = { lat: number; lng: number; label: string };
 type OrderStatus = "pending" | "delivered";
@@ -183,16 +184,17 @@ export default function Home() {
   const [movementBranchPath, setMovementBranchPath] = useState("کل موجودی");
   const [movementDraft, setMovementDraft] = useState({ direction: "in" as "in" | "out" | "adjustment", quantity: 0, unit: "عدد", note: "" });
   const activityMutation=trpc.activities.create.useMutation();
-  const customersQuery=trpc.crm.customers.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
-  const ordersQuery=trpc.crm.orders.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
-  const inventoryQuery=trpc.inventory.list.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
+  const refreshInterval=useRefreshInterval();
+  const customersQuery=trpc.crm.customers.useQuery(undefined,{refetchInterval:refreshInterval,refetchIntervalInBackground:true});
+  const ordersQuery=trpc.crm.orders.useQuery(undefined,{refetchInterval:refreshInterval,refetchIntervalInBackground:true});
+  const inventoryQuery=trpc.inventory.list.useQuery(undefined,{refetchInterval:refreshInterval,refetchIntervalInBackground:true});
   const createInventoryMutation=trpc.inventory.create.useMutation();
   const updateInventoryMutation=trpc.inventory.update.useMutation();
   const addMovementMutation=trpc.inventory.addMovement.useMutation();
   const editMovementMutation=trpc.inventory.editMovement.useMutation();
   const deleteMovementMutation=trpc.inventory.deleteMovement.useMutation();
   const movementHistoryId=movementItemId?.startsWith("INV-")?Number(movementItemId.replace("INV-","")):0;
-  const movementHistoryQuery=trpc.inventory.movements.useQuery({inventoryItemId:movementHistoryId},{enabled:movementHistoryId>0,refetchInterval:5000,refetchIntervalInBackground:true});
+  const movementHistoryQuery=trpc.inventory.movements.useQuery({inventoryItemId:movementHistoryId},{enabled:movementHistoryId>0,refetchInterval:refreshInterval,refetchIntervalInBackground:true});
   const createCustomerMutation=trpc.crm.createCustomer.useMutation();
   const createOrderMutation=trpc.crm.createOrder.useMutation();
   const updateOrderMutation=trpc.crm.updateOrder.useMutation();

@@ -3,6 +3,7 @@ import { ArrowRight, Check, ChevronDown, ClipboardList, MapPin, Plus, Trash2, Us
 import { useLocation } from "wouter";
 import { MapView } from "@/components/Map";
 import { trpc } from "@/lib/trpc";
+import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
 type PresetKey = "products" | "fabrics" | "colors" | "buttons" | "zippers" | "pockets" | "prints";
 type SizeRow = { size:string; qty:number };
@@ -21,11 +22,12 @@ export default function OrderEntry(){
   const [,setLocation]=useLocation();
   const [customer,setCustomer]=useState<Customer>({name:"",phone:"",business:"",city:"",address:""});
   const [customers,setCustomers]=useState<Customer[]>(()=>{try{return JSON.parse(localStorage.getItem("sepid-customers")||"[]")}catch{return []}});
-  const customersQuery=trpc.crm.customers.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
+  const refreshInterval=useRefreshInterval();
+  const customersQuery=trpc.crm.customers.useQuery(undefined,{refetchInterval:refreshInterval,refetchIntervalInBackground:true});
   const createCustomerMutation=trpc.crm.createCustomer.useMutation();
   const updateCustomerMutation=trpc.crm.updateCustomer.useMutation();
   const createOrderMutation=trpc.crm.createOrder.useMutation();
-  const ordersQuery=trpc.crm.orders.useQuery(undefined,{refetchInterval:3000,refetchIntervalInBackground:true});
+  const ordersQuery=trpc.crm.orders.useQuery(undefined,{refetchInterval:refreshInterval,refetchIntervalInBackground:true});
   const updateOrderMutation=trpc.crm.updateOrder.useMutation();
   const activityMutation=trpc.activities.create.useMutation();
   const utils=trpc.useUtils();

@@ -2,6 +2,7 @@ import { ArrowRight, CheckCircle2, Clock3, Download, Edit3, FileText, MapPin, Pa
 import { useLocation } from "wouter";
 import { MapView } from "@/components/Map";
 import { trpc } from "@/lib/trpc";
+import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
 const money=(value:number)=>`${Number(value||0).toLocaleString("fa-IR")} تومان`;
 const formatDate=(value:Date|string|number|null|undefined,withTime=false)=>value?new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric",...(withTime?{hour:"2-digit",minute:"2-digit"}:{})}).format(new Date(value)):"ثبت نشده";
@@ -10,7 +11,8 @@ const actionLabels:Record<string,string>={created:"ثبت سفارش",updated:"�
 export default function OrderDetails(){
   const [location,setLocation]=useLocation();
   const id=Number(location.match(/\/orders\/(\d+)/)?.[1]||0);
-  const detailQuery=trpc.crm.orderDetails.useQuery({id},{enabled:id>0,refetchInterval:10000});
+  const refreshInterval=useRefreshInterval();
+  const detailQuery=trpc.crm.orderDetails.useQuery({id},{enabled:id>0,refetchInterval:refreshInterval,refetchIntervalInBackground:true});
   const detail=detailQuery.data;
   if(detailQuery.isLoading)return <div className="order-detail-page"><div className="detail-loading">در حال دریافت جزئیات سفارش...</div></div>;
   if(!detail)return <div className="order-detail-page"><div className="detail-empty"><Package size={30}/><h2>سفارش پیدا نشد</h2><p>این سفارش حذف شده یا شناسه آن معتبر نیست.</p><button className="primary-button" onClick={()=>setLocation("/orders")}>بازگشت به سفارش‌ها</button></div></div>;
