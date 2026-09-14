@@ -9,6 +9,7 @@ import Sales from "@/pages/Sales";
 import OrderEntry from "@/pages/OrderEntry";
 import OrderDetails from "@/pages/OrderDetails";
 import Access from "@/pages/Access";
+import Settings from "@/pages/Settings";
 import "./factory-pages.css";
 import DashboardLayout from "./components/DashboardLayout";
 import { useEffect } from "react";
@@ -17,6 +18,7 @@ const SalesPage = () => <DashboardLayout><Sales /></DashboardLayout>;
 const OrderEntryPage = () => <DashboardLayout><OrderEntry /></DashboardLayout>;
 const OrderDetailsPage = () => <DashboardLayout><OrderDetails /></DashboardLayout>;
 const AccessPage = () => <DashboardLayout><Access /></DashboardLayout>;
+const SettingsPage = () => <DashboardLayout><Settings /></DashboardLayout>;
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -30,6 +32,7 @@ function Router() {
       <Route path={"/delivery"} component={Home} />
       <Route path={"/inventory"} component={Home} />
       <Route path={"/access"} component={AccessPage} />
+      <Route path={"/settings"} component={SettingsPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
