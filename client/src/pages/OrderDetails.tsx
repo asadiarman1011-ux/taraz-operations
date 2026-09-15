@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { currencyLabel, formatCurrency, useCurrency } from "@/hooks/useCurrency";
 import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
+const COMPANY_LOGO="/manus-storage/sepidfinal_0594416d.webp";
 const money=(value:number)=>formatCurrency(value);
 const formatDate=(value:Date|string|number|null|undefined,withTime=false)=>value?new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric",...(withTime?{hour:"2-digit",minute:"2-digit"}:{})}).format(new Date(value)):"ثبت نشده";
 const actionLabels:Record<string,string>={created:"ثبت سفارش",updated:"ویرایش سفارش",delivered:"ثبت تحویل"};
@@ -22,7 +23,7 @@ export default function OrderDetails(){
   let items:any[]=[];try{items=JSON.parse(order.itemsJson||"[]")}catch{items=[]}
   const printOrder=()=>{const previousTitle=document.title;document.title=`پیش‌فاکتور سفارش ${order.id}`;window.setTimeout(()=>{window.print();window.setTimeout(()=>{document.title=previousTitle},500)},50)};
   return <div dir="rtl" className="order-detail-page">
-    <div className="detail-page-head"><button className="back-button" onClick={()=>setLocation("/orders")}><ArrowRight size={18}/> بازگشت به سفارش‌ها</button><div><span className="eyebrow">پرونده کامل سفارش</span><h1>سفارش #{order.id}</h1><p>تمام مشخصات خرید، تحویل و تاریخچه تغییرات در یک صفحه.</p></div><div className="detail-page-actions"><button className="outline-button" onClick={printOrder}><Printer size={17}/> چاپ مستقیم</button><button className="outline-button" onClick={printOrder}><Download size={17}/> دانلود PDF</button><button className="primary-button" onClick={()=>setLocation(`/orders/new?order=${order.id}`)}><Edit3 size={17}/> ویرایش سفارش</button></div></div>
+    <div className="detail-page-head"><div className="detail-print-brand"><img src={COMPANY_LOGO} alt="لوگوی تولیدی پوشاک سپید"/><span>تولیدی پوشاک سپید</span></div><button className="back-button" onClick={()=>setLocation("/orders")}><ArrowRight size={18}/> بازگشت به سفارش‌ها</button><div><span className="eyebrow">پرونده کامل سفارش</span><h1>سفارش #{order.id}</h1><p>تمام مشخصات خرید، تحویل و تاریخچه تغییرات در یک صفحه.</p></div><div className="detail-page-actions"><button className="outline-button" onClick={printOrder}><Printer size={17}/> چاپ مستقیم</button><button className="outline-button" onClick={printOrder}><Download size={17}/> دانلود PDF</button><button className="primary-button" onClick={()=>setLocation(`/orders/new?order=${order.id}`)}><Edit3 size={17}/> ویرایش سفارش</button></div></div>
     <div className="detail-status-strip"><span className={order.status==="delivered"?"status green":"status amber"}>{order.status==="delivered"?<CheckCircle2 size={15}/>:<Clock3 size={15}/>} {order.status==="delivered"?"تحویل داده‌شده":"در انتظار تحویل"}</span><span><FileText size={15}/> تاریخ سفارش: {order.jalaliDate}</span><span>واحد پول: {currencyLabel()}</span><strong>{money(order.total)}</strong></div>
     <div className="order-detail-grid">
       <main>

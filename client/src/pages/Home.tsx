@@ -42,6 +42,7 @@ import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "reac
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { currencyLabel, formatCurrency, useCurrency } from "@/hooks/useCurrency";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
 type LocationPoint = { lat: number; lng: number; label: string };
@@ -92,6 +93,9 @@ type RawMaterial = {
 type OrderDraft = Omit<Order, "id" | "createdAt" | "status" | "delivery">;
 type ProductDraft = Omit<Garment, "id">;
 type MaterialDraft = Omit<RawMaterial, "id" | "tags">;
+
+const COMPANY_LOGO = "/manus-storage/sepidfinal_0594416d.webp";
+const PERSIAN_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
 
 const initialOrders: Order[] = [];
 const initialGarments: Garment[] = [];
@@ -244,6 +248,7 @@ export default function Home() {
   const garmentStock = garments.reduce((sum, product) => sum + product.stock, 0);
   const lowStock = materials.filter(item => item.stock <= item.threshold).length;
   const selectedDeliverySummary = useMemo(() => delivered.reduce((summary, order) => { const timestamp = order.delivery?.completedAt; if (!timestamp) return summary; const parts = jalaliParts(timestamp); if (parts.year === Number(deliveryYear) && parts.month === Number(deliveryMonth)) { summary.total += order.delivery?.cost ?? 0; summary.count += 1; } return summary; }, { total: 0, count: 0 }), [delivered, deliveryYear, deliveryMonth]);
+  const salesByMonth = useMemo(() => PERSIAN_MONTHS.map((month, index) => ({ month, sales: orders.filter(order => jalaliParts(order.createdAt).month === index + 1).reduce((sum, order) => sum + Number(order.total || 0), 0) })), [orders]);
   const filteredGarments = useMemo(() => garments.filter(item => { const text = `${item.type} ${item.fabric} ${item.color} ${item.sku} ${item.details} ${item.description}`.toLocaleLowerCase("fa-IR"); const matchesText = text.includes(query.trim().toLocaleLowerCase("fa-IR")); const matchesCategory = !inventoryCategoryFilter || item.type === inventoryCategoryFilter || item.fabric === inventoryCategoryFilter || item.color === inventoryCategoryFilter; const matchesLow = !inventoryOnlyLow || item.stock <= item.reserved; return matchesText && matchesCategory && matchesLow; }), [garments, query, inventoryCategoryFilter, inventoryOnlyLow]);
   const filteredMaterials = useMemo(() => materials.filter(item => { const branches = (item.breakdown || []).flatMap(branch => [branch.name, ...(branch.children || []).map(child => child.name)]).join(" "); const text = `${item.name} ${item.category} ${item.tags.join(" ")} ${branches} ${item.description}`.toLocaleLowerCase("fa-IR"); const matchesText = text.includes(query.trim().toLocaleLowerCase("fa-IR")); const matchesCategory = !inventoryCategoryFilter || item.category === inventoryCategoryFilter; const matchesBranch = !inventoryBranchFilter || branches.toLocaleLowerCase("fa-IR").includes(inventoryBranchFilter.trim().toLocaleLowerCase("fa-IR")); const matchesLow = !inventoryOnlyLow || item.stock <= item.threshold; return matchesText && matchesCategory && matchesBranch && matchesLow; }), [materials, query, inventoryCategoryFilter, inventoryBranchFilter, inventoryOnlyLow]);
   const liveRefreshing = customersQuery.isFetching || ordersQuery.isFetching || inventoryQuery.isFetching;
@@ -349,6 +354,7 @@ export default function Home() {
   </div>;
 
   const DashboardPage = <>
+    <div className="dashboard-brand-banner"><img src={COMPANY_LOGO} alt="لوگوی تولیدی پوشاک سپید" /><div><span className="eyebrow">برند رسمی کارخانه</span><strong>تولیدی پوشاک سپید</strong><small>سامانه مدیریت فروش، سفارش و انبار</small></div></div>
     <PageHeading eyebrow={`امروز · ${jalaliDate(Date.now())}`} title="صبح بخیر، مدیر کارگاه" description="نمایی از سفارش‌ها، تحویل‌ها و موجودی امروز شما." action={undefined} />
     <section className="stats-grid">
       <article className="stat-card green-card"><div className="stat-icon"><ClipboardList size={20} /></div><div><span>سفارش‌های فعال</span><strong>{number(pending.length)}</strong><small>از داده‌های ثبت‌شده</small></div></article>
@@ -356,6 +362,7 @@ export default function Home() {
       <article className="stat-card lavender-card"><div className="stat-icon"><Boxes size={20} /></div><div><span>موجودی پوشاک</span><strong>{number(garmentStock)}</strong><small>{number(garments.length)} مدل ثبت‌شده</small></div></article>
       <article className="stat-card yellow-card"><div className="stat-icon"><CircleDollarSign size={20} /></div><div><span>فروش تحویل‌شده</span><strong>{money(delivered.reduce((sum, order) => sum + order.total, 0))}</strong><small>از داده‌های ثبت‌شده</small></div></article>
     </section>
+    <section className="sales-chart-card"><div className="chart-card-head"><div><span className="eyebrow">تحلیل فروش</span><h3>مقایسه فروش ماه‌های مختلف</h3><p>مجموع مبلغ سفارش‌های ثبت‌شده بر اساس ماه شمسی</p></div><span className="chart-unit">{currencyLabel()}</span></div><div className="sales-chart"><ResponsiveContainer width="100%" height={270}><BarChart data={salesByMonth} margin={{ top: 8, right: 8, left: 8, bottom: 2 }}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7ece7"/><XAxis dataKey="month" tick={{ fontSize: 10, fill: "#718078" }} interval={0} tickFormatter={(value) => String(value).slice(0, 4)}/><YAxis tick={{ fontSize: 10, fill: "#718078" }} tickFormatter={(value) => new Intl.NumberFormat("fa-IR", { notation: "compact", maximumFractionDigits: 1 }).format(Number(value))}/><Tooltip formatter={(value) => [money(Number(value)), `فروش (${currencyLabel()})`]} labelFormatter={(label) => `ماه ${label}`} contentStyle={{ direction: "rtl", borderRadius: 10, border: "1px solid #dfe8dd", fontFamily: "Vazirmatn" }}/><Bar dataKey="sales" name="فروش" fill="#31584a" radius={[7, 7, 0, 0]} maxBarSize={34}/></BarChart></ResponsiveContainer></div></section>
     <section className="dashboard-grid">
       <OrderTable data={pending.slice(0, 3)} compact />
       <aside className="readiness-card">
