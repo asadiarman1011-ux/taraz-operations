@@ -2,13 +2,15 @@ import { ArrowRight, CheckCircle2, Clock3, Download, Edit3, FileText, MapPin, Pa
 import { useLocation } from "wouter";
 import { MapView } from "@/components/Map";
 import { trpc } from "@/lib/trpc";
+import { currencyLabel, formatCurrency, useCurrency } from "@/hooks/useCurrency";
 import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
-const money=(value:number)=>`${Number(value||0).toLocaleString("fa-IR")} تومان`;
+const money=(value:number)=>formatCurrency(value);
 const formatDate=(value:Date|string|number|null|undefined,withTime=false)=>value?new Intl.DateTimeFormat("fa-IR-u-ca-persian",{year:"numeric",month:"long",day:"numeric",...(withTime?{hour:"2-digit",minute:"2-digit"}:{})}).format(new Date(value)):"ثبت نشده";
 const actionLabels:Record<string,string>={created:"ثبت سفارش",updated:"ویرایش سفارش",delivered:"ثبت تحویل"};
 
 export default function OrderDetails(){
+  useCurrency();
   const [location,setLocation]=useLocation();
   const id=Number(location.match(/\/orders\/(\d+)/)?.[1]||0);
   const refreshInterval=useRefreshInterval();
