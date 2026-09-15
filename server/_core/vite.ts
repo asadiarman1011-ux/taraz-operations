@@ -9,7 +9,11 @@ import viteConfig from "../../vite.config";
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
-    hmr: { server },
+    // The WebDev proxy exposes the app on a public HTTPS host, while Vite's
+    // default HMR client advertises localhost:5173. That endpoint is not
+    // reachable from the browser and produces a noisy websocket error on
+    // every route. File changes are still picked up on refresh/restart.
+    hmr: false,
     allowedHosts: true as const,
   };
 
