@@ -10,7 +10,7 @@ const scopes:Scope[]=[
  {key:"فروش و مشتری‌ها",label:"فروش و مشتری‌ها"},{key:"ثبت سفارش",label:"ثبت سفارش"},{key:"تحویل محصول",label:"تحویل محصول"},
  {key:"inventory.view",label:"انبار · مشاهده موجودی"},{key:"inventory.edit",label:"انبار · افزودن و ویرایش کالا"},
  {key:"inventory.movements",label:"انبار · ثبت و اصلاح گردش موجودی"},{key:"inventory.history",label:"انبار · مشاهده تاریخچه گردش"},
- {key:"reports.view",label:"گزارش‌ها · مشاهده"},{key:"reports.export",label:"گزارش‌ها · خروجی Excel و PDF"},{key:"مدیریت کاربران",label:"مدیریت کاربران"}
+ {key:"reports.view",label:"گزارش‌ها · مشاهده"},{key:"reports.export",label:"گزارش‌ها · خروجی Excel و PDF"},{key:"settings.view",label:"تنظیمات · مشاهده"},{key:"settings.edit",label:"تنظیمات · ویرایش و تغییرات سراسری"},{key:"مدیریت کاربران",label:"مدیریت کاربران"}
 ];
 const modeLabel={view:"فقط مشاهده",edit:"دسترسی کامل",none:"بدون دسترسی"};
 const defaultPermissions=(role:"user"|"admin")=>Object.fromEntries(scopes.map(scope=>[scope.key,role==="admin"?"edit":"none"])) as Record<string,Permission>;

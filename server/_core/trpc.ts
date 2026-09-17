@@ -50,14 +50,16 @@ export type PermissionScope =
   | "inventory.movements"
   | "inventory.history"
   | "reports.view"
-  | "reports.export";
+  | "reports.export"
+  | "settings.view"
+  | "settings.edit";
 
-export function hasPermission(user: TrpcContext["user"], scope: PermissionScope) {
+export function hasPermission(user: TrpcContext["user"], scope: PermissionScope, required: "view" | "edit" = "view") {
   if (!user) return false;
   if (user.role === "admin") return true;
   try {
     const permissions = user.permissionsJson ? JSON.parse(user.permissionsJson) : {};
-    if (permissions[scope] === "edit" || permissions[scope] === "view") return true;
+    if (permissions[scope] === "edit" || (required === "view" && permissions[scope] === "view")) return true;
     if (scope.startsWith("inventory.") && permissions["انبار"] === "edit") return true;
     if (scope.startsWith("reports.") && permissions["گزارش‌ها"] === "edit") return true;
   } catch { /* malformed legacy permissions are treated as denied */ }
@@ -68,6 +70,14 @@ export const permissionProcedure = (scope: PermissionScope) =>
   protectedProcedure.use(t.middleware(async ({ ctx, next }) => {
     if (!hasPermission(ctx.user, scope)) {
       throw new TRPCError({ code: "FORBIDDEN", message: "شما به این عملیات دسترسی ندارید." });
+    }
+    return next({ ctx: { ...ctx, user: ctx.user } });
+  }));
+
+export const editPermissionProcedure = (scope: PermissionScope) =>
+  protectedProcedure.use(t.middleware(async ({ ctx, next }) => {
+    if (!hasPermission(ctx.user, scope, "edit")) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "برای تغییر این بخش، دسترسی ویرایش لازم است." });
     }
     return next({ ctx: { ...ctx, user: ctx.user } });
   }));

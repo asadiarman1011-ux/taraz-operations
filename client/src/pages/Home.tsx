@@ -95,7 +95,7 @@ type OrderDraft = Omit<Order, "id" | "createdAt" | "status" | "delivery">;
 type ProductDraft = Omit<Garment, "id">;
 type MaterialDraft = Omit<RawMaterial, "id" | "tags">;
 
-const COMPANY_LOGO = "/manus-storage/sepidfinal_0594416d.webp";
+const COMPANY_LOGO = "/manus-storage/sepidfinal_b021dc05.webp";
 const PERSIAN_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
 
 const initialOrders: Order[] = [];
@@ -210,6 +210,7 @@ export default function Home() {
   const authQuery=trpc.auth.me.useQuery();
   const userPermissions=useMemo(()=>{if(authQuery.data?.role==="admin")return new Set(["inventory.view","inventory.edit","inventory.movements","inventory.history","reports.view","reports.export"]);try{return new Set(Object.entries(JSON.parse(authQuery.data?.permissionsJson||"{}" )).filter(([,value])=>value==="view"||value==="edit").map(([key])=>key));}catch{return new Set<string>();}},[authQuery.data]);
   const can=(scope:string)=>authQuery.data?.role==="admin"||userPermissions.has(scope);
+  const canEdit=(scope:string)=>authQuery.data?.role==="admin"||(()=>{try{const p=authQuery.data?.permissionsJson?JSON.parse(authQuery.data.permissionsJson):{};return p[scope]==="edit";}catch{return false;}})();
 
   useEffect(() => { localStorage.setItem("taraz-orders", JSON.stringify(orders)); }, [orders]);
   useEffect(() => {
@@ -406,7 +407,7 @@ export default function Home() {
   </>;
 
   const InventoryPage = <>
-    <PageHeading eyebrow="موجودی، ویژگی و قابلیت ویرایش" title="انبار" description="موجودی پوشاک و مواد اولیه را با جزئیات کامل، زیرشاخه و نقطه سفارش مدیریت کنید." action={<button className="primary-button" disabled={!can("inventory.edit")} title={!can("inventory.edit") ? "مجوز افزودن و ویرایش کالا لازم است" : undefined} onClick={() => inventoryTab === "garments" ? openProduct() : openMaterial()}><Plus size={18} /> {inventoryTab === "garments" ? "افزودن پوشاک" : "افزودن ماده اولیه"}</button>} />
+    <PageHeading eyebrow="موجودی، ویژگی و قابلیت ویرایش" title="انبار" description="موجودی پوشاک و مواد اولیه را با جزئیات کامل، زیرشاخه و نقطه سفارش مدیریت کنید." action={<button className="primary-button" disabled={!canEdit("inventory.edit")} title={!canEdit("inventory.edit") ? "این حساب فقط اجازه مشاهده دارد" : undefined} onClick={() => inventoryTab === "garments" ? openProduct() : openMaterial()}><Plus size={18} /> {inventoryTab === "garments" ? "افزودن پوشاک" : "افزودن ماده اولیه"}</button>} />
     <div className="inventory-tabs"><button className={inventoryTab === "garments" ? "selected" : ""} onClick={() => setInventoryTab("garments")}><Package size={18} /> پوشاک <span>{number(garments.length)} مدل</span></button><button className={inventoryTab === "materials" ? "selected" : ""} onClick={() => setInventoryTab("materials")}><Box size={18} /> مواد اولیه <span>{number(materials.length)} قلم</span></button></div>
     <section className="inventory-summary"><div><span>کل موجودی پوشاک</span><strong>{number(garmentStock)} <small>عدد</small></strong><p>در {number(garments.length)} مدل مختلف</p></div><div><span>مواد نیازمند سفارش</span><strong className="coral-text">{number(lowStock)} <small>قلم</small></strong><p>بر اساس نقطه سفارش شما</p></div><div className="fabric-promo"><div><span>طبقه‌بندی منعطف</span><strong>هر ویژگی را اضافه کنید.</strong><p>جنس، رنگ، گرماژ و زیرشاخه‌ها محدودیتی ندارند.</p></div></div></section>
     <section className="toolbar inventory-toolbar">{commonSearch}<div className="toolbar-actions"><button className={`filter-button ${inventoryFilterOpen ? "active" : ""}`} onClick={() => setInventoryFilterOpen(value => !value)}><ListFilter size={17} /> فیلتر پیشرفته <ChevronDown size={15} /></button><button className={`filter-button ${inventoryOnlyLow ? "active" : ""}`} onClick={() => setInventoryOnlyLow(value => !value)}><SlidersHorizontal size={17} /> فقط کم‌موجود</button></div></section>

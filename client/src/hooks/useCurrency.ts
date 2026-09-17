@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export type Currency = "تومان" | "ریال";
-export const readCurrency = (): Currency => { try { return JSON.parse(localStorage.getItem("sepid-settings") || "{}").currency === "ریال" ? "ریال" : "تومان"; } catch { return "تومان"; } };
+export const readCurrency = (): Currency => { try { return JSON.parse(localStorage.getItem("sepid-settings") || "{}").currency === "تومان" ? "تومان" : "ریال"; } catch { return "ریال"; } };
 export const currencyLabel = () => readCurrency();
 export const convertCurrencyValue = (value: number, currency = readCurrency()) => currency === "ریال" ? value * 10 : value;
 export const formatCurrency = (value: number, currency = readCurrency()) => `${convertCurrencyValue(Number(value) || 0, currency).toLocaleString("fa-IR")} ${currency}`;

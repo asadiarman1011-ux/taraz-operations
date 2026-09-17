@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
-import { activities, customers, InsertUser, inventoryItems, inventoryMovements, orderHistory, orders, restoreHistory, users } from "../drizzle/schema";
+import { activities, activityDismissals, appSettings, customers, InsertUser, inventoryItems, inventoryMovements, orderHistory, orders, restoreHistory, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -22,8 +22,11 @@ export async function getOrderDetails(id:number){const db=await getDb();if(!db)r
 export async function listOrderHistory(orderId:number){const db=await getDb();if(!db)return [];return db.select().from(orderHistory).where(eq(orderHistory.orderId,orderId)).orderBy(desc(orderHistory.createdAt))}
 export async function createOrder(input:typeof orders.$inferInsert){const db=await getDb();if(!db)throw new Error("Database is not available");const result=await db.insert(orders).values(input);const id=Number(result[0].insertId);await appendOrderHistory(id,"created",{total:input.total,status:input.status ?? "pending",jalaliDate:input.jalaliDate,itemsJson:input.itemsJson});const rows=await db.select().from(orders).where(eq(orders.id,id)).limit(1);return rows[0]}
 export async function updateOrder(id:number,input:Partial<typeof orders.$inferInsert>){const db=await getDb();if(!db)throw new Error("Database is not available");await db.update(orders).set(input).where(eq(orders.id,id));await appendOrderHistory(id,input.status === "delivered" ? "delivered" : "updated",input);const rows=await db.select().from(orders).where(eq(orders.id,id)).limit(1);return rows[0]}
-export async function listActivities(){const db=await getDb();if(!db)return [];return db.select().from(activities).orderBy(desc(activities.createdAt)).limit(40)}
+export async function listActivities(userOpenId?:string){const db=await getDb();if(!db)return [];const rows=await db.select().from(activities).orderBy(desc(activities.createdAt)).limit(200);if(!userOpenId)return rows;const hidden=await db.select({activityId:activityDismissals.activityId}).from(activityDismissals).where(eq(activityDismissals.userOpenId,userOpenId));const hiddenIds=new Set(hidden.map(item=>item.activityId));return rows.filter(item=>!hiddenIds.has(item.id));}
+export async function dismissActivity(activityId:number,userOpenId:string){const db=await getDb();if(!db)throw new Error("Database is not available");await db.insert(activityDismissals).values({activityId,userOpenId});return {success:true};}
 export async function createActivity(text:string){const db=await getDb();if(!db)throw new Error("Database is not available");const result=await db.insert(activities).values({text});const id=Number(result[0].insertId);const rows=await db.select().from(activities).where(eq(activities.id,id)).limit(1);return rows[0]}
+export async function getAppSettings(){const db=await getDb();if(!db)return [];return db.select().from(appSettings)}
+export async function setAppSettings(values:Record<string,string>){const db=await getDb();if(!db)throw new Error("Database is not available");for(const [key,value] of Object.entries(values))await db.insert(appSettings).values({key,value}).onDuplicateKeyUpdate({set:{value}});return getAppSettings()}
 
 export async function listInventoryItems(){const db=await getDb();if(!db)return [];return db.select().from(inventoryItems).orderBy(desc(inventoryItems.updatedAt))}
 export async function createInventoryItem(input:typeof inventoryItems.$inferInsert){const db=await getDb();if(!db)throw new Error("Database is not available");const result=await db.insert(inventoryItems).values(input);const id=Number(result[0].insertId);const rows=await db.select().from(inventoryItems).where(eq(inventoryItems.id,id)).limit(1);return rows[0]}
