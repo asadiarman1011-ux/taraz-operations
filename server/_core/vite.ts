@@ -42,7 +42,14 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`
       );
-      const page = await vite.transformIndexHtml(url, template);
+      // Even with hmr disabled, Vite injects /@vite/client during HTML
+      // transformation. In the public WebDev proxy that client attempts a
+      // websocket against an unreachable local endpoint, so strip it from
+      // the HTML served to browsers.
+      const page = (await vite.transformIndexHtml(url, template)).replace(
+        /<script[^>]+src=["']\/\@vite\/client["'][^>]*><\/script>/gi,
+        ""
+      );
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
