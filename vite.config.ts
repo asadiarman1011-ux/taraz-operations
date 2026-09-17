@@ -169,6 +169,10 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    // WebDev serves the application through its own HTTPS proxy. A Vite HMR
+    // client would target the local dev socket and repeatedly log a failed
+    // websocket connection in the browser, so keep HMR disabled globally.
+    hmr: false,
     host: true,
     allowedHosts: [
       ".manuspre.computer",
