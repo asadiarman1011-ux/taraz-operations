@@ -1,8 +1,8 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { ENV } from "./env";
 
 export function registerStorageProxy(app: Express) {
-  app.get("/manus-storage/*", async (req, res) => {
+  const serveStoredObject = async (req: Request, res: Response) => {
     const key = (req.params as Record<string, string>)[0];
     if (!key) {
       res.status(400).send("Missing storage key");
@@ -59,5 +59,10 @@ export function registerStorageProxy(app: Express) {
       console.error("[StorageProxy] failed:", err);
       res.status(502).send("Storage proxy error");
     }
-  });
+  };
+
+  // Keep the original path for backward compatibility, and expose a dedicated
+  // application-owned path for public deployments that intercept /manus-storage.
+  app.get("/manus-storage/*", serveStoredObject);
+  app.get("/api/media/*", serveStoredObject);
 }

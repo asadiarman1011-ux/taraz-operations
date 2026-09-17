@@ -95,7 +95,7 @@ type OrderDraft = Omit<Order, "id" | "createdAt" | "status" | "delivery">;
 type ProductDraft = Omit<Garment, "id">;
 type MaterialDraft = Omit<RawMaterial, "id" | "tags">;
 
-const COMPANY_LOGO = "/manus-storage/sepidfinal_b021dc05.webp";
+const COMPANY_LOGO = "/api/media/sepidfinal_b021dc05.webp";
 const PERSIAN_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
 
 const initialOrders: Order[] = [];
