@@ -13,6 +13,8 @@ import Settings from "@/pages/Settings";
 import "./factory-pages.css";
 import DashboardLayout from "./components/DashboardLayout";
 import { useEffect } from "react";
+import Login from "@/pages/Login";
+import { trpc } from "@/lib/trpc";
 
 const SalesPage = () => <DashboardLayout><Sales /></DashboardLayout>;
 const OrderEntryPage = () => <DashboardLayout><OrderEntry /></DashboardLayout>;
@@ -33,6 +35,7 @@ function Router() {
       <Route path={"/inventory"} component={Home} />
       <Route path={"/access"} component={AccessPage} />
       <Route path={"/settings"} component={SettingsPage} />
+      <Route path={"/login"} component={Login} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -46,6 +49,7 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+  const meQuery=trpc.auth.me.useQuery(undefined,{retry:false,refetchOnWindowFocus:false});
   useEffect(() => {
     const resetKey = "sepid-clean-start-v1";
     if (!localStorage.getItem(resetKey)) {
@@ -53,6 +57,8 @@ function App() {
       localStorage.setItem(resetKey, "done");
     }
   }, []);
+  if(window.location.pathname!=="/login" && meQuery.isLoading) return <div className="auth-loading" dir="rtl"><div className="login-mark"><span>ت</span></div><strong>در حال بررسی نشست کاربری...</strong></div>;
+  if(window.location.pathname!=="/login" && !meQuery.data) return <Login />;
   return (
     <ErrorBoundary>
       <ThemeProvider

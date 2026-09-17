@@ -2,14 +2,15 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { permissionProcedure, publicProcedure, router } from "./_core/trpc";
-import { createActivity, createCustomer, createInventoryItem, createInventoryMovement, createOrder, exportDatabase, getOrderDetails, listActivities, listCustomers, listInventoryItems, listInventoryMovements, listOrderHistory, listOrders, listRestoreHistory, listUsers, restoreDatabase, softDeleteInventoryMovement, updateCustomer, updateInventoryItem, updateInventoryMovement, updateOrder, updateUser } from "./db";
+import { adminProcedure, permissionProcedure, publicProcedure, router } from "./_core/trpc";
+import { sdk } from "./_core/sdk";
+import { authenticateEmployee, createActivity, createCustomer, createEmployee, createInventoryItem, createInventoryMovement, createOrder, exportDatabase, getOrderDetails, listActivities, listCustomers, listInventoryItems, listInventoryMovements, listOrderHistory, listOrders, listRestoreHistory, listUsers, restoreDatabase, softDeleteInventoryMovement, updateCustomer, updateInventoryItem, updateInventoryMovement, updateOrder, updateUser } from "./db";
 
 export const customerInput=z.object({name:z.string().min(1),phone:z.string().min(1),business:z.string().default(""),city:z.string().default(""),address:z.string().default(""),lat:z.number().nullable().optional(),lng:z.number().nullable().optional(),status:z.enum(["ثابت","غیر ثابت","نیاز به پیگیری","در حال پیگیری"]).default("غیر ثابت"),note:z.string().nullable().optional()});
 const orderInput=z.object({customerId:z.number().int(),jalaliDate:z.string().min(1),address:z.string().default(""),lat:z.number().nullable().optional(),lng:z.number().nullable().optional(),itemsJson:z.string(),total:z.number().int(),notes:z.string().optional(),status:z.enum(["pending","delivered"]).default("pending"),deliveryMethod:z.string().max(80).nullable().optional(),deliveryCost:z.number().int().nonnegative().nullable().optional(),deliveryAt:z.coerce.date().nullable().optional(),deliveryNote:z.string().nullable().optional()});
 export const appRouter=router({
   system:systemRouter,
-  auth:router({me:publicProcedure.query(opts=>opts.ctx.user),logout:publicProcedure.mutation(({ctx})=>{const cookieOptions=getSessionCookieOptions(ctx.req);ctx.res.clearCookie(COOKIE_NAME,{...cookieOptions,maxAge:-1});return{success:true} as const})}),
+  auth:router({me:publicProcedure.query(opts=>opts.ctx.user),logout:publicProcedure.mutation(({ctx})=>{const cookieOptions=getSessionCookieOptions(ctx.req);ctx.res.clearCookie(COOKIE_NAME,{...cookieOptions,maxAge:-1});return{success:true} as const}),login:publicProcedure.input(z.object({username:z.string().min(3).max(80),password:z.string().min(6).max(200)})).mutation(async({input,ctx})=>{const user=await authenticateEmployee(input.username,input.password);if(!user)throw new Error("نام کاربری یا رمز عبور نادرست است.");const token=await sdk.createLocalSessionToken(user.openId,user.name||user.username||"کارمند");ctx.res.cookie(COOKIE_NAME,token,getSessionCookieOptions(ctx.req));return user;}),register:publicProcedure.input(z.object({name:z.string().min(2).max(160),jobTitle:z.string().min(2).max(120),username:z.string().regex(/^[a-zA-Z0-9_.-]{3,80}$/),password:z.string().min(6).max(200)})).mutation(({input})=>createEmployee(input))}),
   crm:router({
     customers:publicProcedure.query(()=>listCustomers()),
     createCustomer:publicProcedure.input(customerInput).mutation(({input})=>createCustomer(input)),
@@ -31,6 +32,6 @@ export const appRouter=router({
     editMovement:permissionProcedure("inventory.movements").input(z.object({id:z.number().int(),data:z.object({branchPath:z.string().max(255).optional(),direction:z.enum(["in","out","adjustment"]).optional(),quantity:z.number().int().positive().optional(),unit:z.string().max(40).optional(),note:z.string().nullable().optional(),previousQuantity:z.number().int().nullable().optional(),changeReason:z.string().min(3)} )})).mutation(({input})=>updateInventoryMovement(input.id,input.data)),
     deleteMovement:permissionProcedure("inventory.movements").input(z.object({id:z.number().int(),changeReason:z.string().min(3)})).mutation(({input})=>softDeleteInventoryMovement(input.id,input.changeReason))
   }),
-  users:router({list:publicProcedure.query(()=>listUsers()),update:publicProcedure.input(z.object({id:z.number().int(),data:z.object({role:z.enum(["user","admin"]).optional(),permissionsJson:z.string().nullable().optional()})})).mutation(({input})=>updateUser(input.id,input.data))})
+  users:router({list:adminProcedure.query(()=>listUsers()),update:adminProcedure.input(z.object({id:z.number().int(),data:z.object({role:z.enum(["user","admin"]).optional(),permissionsJson:z.string().nullable().optional()})})).mutation(({input})=>updateUser(input.id,input.data))})
 });
 export type AppRouter=typeof appRouter;

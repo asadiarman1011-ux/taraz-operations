@@ -359,7 +359,7 @@ export default function Home() {
 
   const DashboardPage = <>
     <div className="dashboard-brand-banner"><img src={COMPANY_LOGO} alt="لوگوی تولیدی پوشاک سپید" /><div><span className="eyebrow">برند رسمی کارخانه</span><strong>تولیدی پوشاک سپید</strong><small>سامانه مدیریت فروش، سفارش و انبار</small></div></div>
-    <PageHeading eyebrow={`امروز · ${jalaliDate(Date.now())}`} title="صبح بخیر، مدیر کارگاه" description="نمایی از سفارش‌ها، تحویل‌ها و موجودی امروز شما." action={undefined} />
+    <PageHeading eyebrow={`امروز · ${jalaliDate(Date.now())}`} title={`صبح بخیر، ${authQuery.data?.name || "همکار کارگاه"}`} description={authQuery.data?.role === "admin" ? "نمایی از سفارش‌ها، تحویل‌ها و موجودی امروز شما." : `سمت: ${authQuery.data?.jobTitle || "کارمند کارگاه"} · نمایی از بخش‌های مجاز شما.`} action={undefined} />
     <section className="stats-grid">
       <article className="stat-card green-card"><div className="stat-icon"><ClipboardList size={20} /></div><div><span>سفارش‌های فعال</span><strong>{number(pending.length)}</strong><small>از داده‌های ثبت‌شده</small></div></article>
       <article className="stat-card peach-card"><div className="stat-icon"><Truck size={20} /></div><div><span>در انتظار تحویل</span><strong>{number(pending.length)}</strong><small>سفارش آماده ارسال</small></div></article>

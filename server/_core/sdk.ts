@@ -177,6 +177,10 @@ class SDKServer {
     );
   }
 
+  async createLocalSessionToken(openId: string, name: string): Promise<string> {
+    return this.signSession({ openId, appId: ENV.appId, name }, { expiresInMs: ONE_YEAR_MS });
+  }
+
   async signSession(
     payload: SessionPayload,
     options: { expiresInMs?: number } = {}
