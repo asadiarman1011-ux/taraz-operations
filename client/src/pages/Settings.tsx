@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { useRefreshInterval } from "@/hooks/useRefreshInterval";
 
 const defaultSettings = { factoryName: "تولیدی پوشاک سپید", currency: "ریال", refreshInterval: "3", soundNotifications: true, compactTables: false, theme: "light" as "light" | "dark" };
+const requestedBackupPassword = "AM$#h!i@48#A";
 type SettingsState = typeof defaultSettings;
 type EncryptedBackup = { format: "sepid-backup"; encrypted: true; version: 1; kdf: "PBKDF2-SHA-256"; iterations: number; salt: string; iv: string; ciphertext: string };
 const encoder = new TextEncoder();
@@ -19,7 +20,7 @@ export default function Settings() {
   const [settings, setSettings] = useState<SettingsState>(() => { try { return { ...defaultSettings, ...JSON.parse(localStorage.getItem("sepid-settings") || "{}")} } catch { return defaultSettings; } });
   const [notice, setNotice] = useState("");
   const [backupBusy, setBackupBusy] = useState(false);
-  const [backupPassword, setBackupPassword] = useState("");
+  const [backupPassword, setBackupPassword] = useState(requestedBackupPassword);
   const restoreInput = useRef<HTMLInputElement>(null);
   const refreshInterval = useRefreshInterval();
   const meQuery = trpc.auth.me.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
@@ -33,6 +34,7 @@ export default function Settings() {
   const utils = trpc.useUtils();
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(""), 3600); return () => window.clearTimeout(timer); }, [notice]);
   useEffect(() => { if (!sharedSettingsQuery.data?.length) return; const raw = Object.fromEntries(sharedSettingsQuery.data.map(item => [item.key, item.value])); const shared = { ...raw, compactTables: raw.compactTables === "true", soundNotifications: raw.soundNotifications !== "false" }; setSettings(current => ({ ...current, ...shared })); }, [sharedSettingsQuery.data]);
+  useEffect(() => { document.documentElement.classList.toggle("dark", settings.theme === "dark"); localStorage.setItem("sepid-theme", settings.theme); localStorage.setItem("sepid-settings", JSON.stringify(settings)); window.dispatchEvent(new CustomEvent("sepid-settings-updated", { detail: settings })); }, [settings.theme]);
   const update = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => setSettings(current => ({ ...current, [key]: value }));
   const save = async () => { try { await sharedSettingsMutation.mutateAsync(Object.fromEntries(Object.entries(settings).map(([key, value]) => [key, String(value)]))); localStorage.setItem("sepid-settings", JSON.stringify(settings)); localStorage.setItem("sepid-theme", settings.theme); document.documentElement.classList.toggle("dark", settings.theme === "dark"); window.dispatchEvent(new CustomEvent("sepid-settings-updated", { detail: settings })); setNotice("تنظیمات به‌صورت سراسری برای همه کاربران ذخیره شد."); } catch { setNotice("ذخیره تنظیمات انجام نشد؛ مجوز ویرایش تنظیمات را بررسی کنید."); } };
   const downloadBackup = async () => { if (backupPassword.trim().length < 8) { setNotice("برای رمزگذاری Backup، رمز عبور حداقل ۸ کاراکتری وارد کنید."); return; } setBackupBusy(true); try { const result = await backupQuery.refetch(); if (!result.data) throw new Error("empty"); const encrypted = await encryptBackup(result.data, backupPassword); const blob = new Blob([JSON.stringify(encrypted, null, 2)], { type: "application/json;charset=utf-8" }); const url = URL.createObjectURL(blob); const anchor = document.createElement("a"); anchor.href = url; anchor.download = `sepid-encrypted-backup-${new Date().toISOString().slice(0, 10)}.sepid.json`; anchor.click(); URL.revokeObjectURL(url); setNotice("Backup رمزگذاری‌شده دانلود شد؛ رمز آن را در جای امن نگه دارید."); } catch { setNotice("تهیه Backup رمزگذاری‌شده انجام نشد."); } finally { setBackupBusy(false); } };
