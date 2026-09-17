@@ -210,7 +210,7 @@ export default function Home() {
   const authQuery=trpc.auth.me.useQuery();
   const userPermissions=useMemo(()=>{if(authQuery.data?.role==="admin")return new Set(["inventory.view","inventory.edit","inventory.movements","inventory.history","reports.view","reports.export"]);try{return new Set(Object.entries(JSON.parse(authQuery.data?.permissionsJson||"{}" )).filter(([,value])=>value==="view"||value==="edit").map(([key])=>key));}catch{return new Set<string>();}},[authQuery.data]);
   const can=(scope:string)=>authQuery.data?.role==="admin"||userPermissions.has(scope);
-  const canEdit=(scope:string)=>authQuery.data?.role==="admin"||(()=>{try{const p=authQuery.data?.permissionsJson?JSON.parse(authQuery.data.permissionsJson):{};return p[scope]==="edit";}catch{return false;}})();
+  const canEdit=(scope:string)=>authQuery.data?.role==="admin"||(()=>{try{const p=authQuery.data?.permissionsJson?JSON.parse(authQuery.data.permissionsJson):{};const group=scope.startsWith("inventory.")?"انبار":scope.startsWith("reports.")?"گزارش‌ها":scope;return p[scope]==="edit"||p[group]==="edit";}catch{return false;}})();
 
   useEffect(() => { localStorage.setItem("taraz-orders", JSON.stringify(orders)); }, [orders]);
   useEffect(() => {

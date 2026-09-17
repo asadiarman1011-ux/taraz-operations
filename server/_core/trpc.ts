@@ -60,8 +60,9 @@ export function hasPermission(user: TrpcContext["user"], scope: PermissionScope,
   try {
     const permissions = user.permissionsJson ? JSON.parse(user.permissionsJson) : {};
     if (permissions[scope] === "edit" || (required === "view" && permissions[scope] === "view")) return true;
-    if (scope.startsWith("inventory.") && permissions["انبار"] === "edit") return true;
-    if (scope.startsWith("reports.") && permissions["گزارش‌ها"] === "edit") return true;
+    if (scope.startsWith("inventory.") && (permissions["انبار"] === "edit" || (required === "view" && permissions["انبار"] === "view"))) return true;
+    if (scope.startsWith("reports.") && (permissions["گزارش‌ها"] === "edit" || (required === "view" && permissions["گزارش‌ها"] === "view"))) return true;
+    if (scope.startsWith("settings.") && (permissions["تنظیمات"] === "edit" || (required === "view" && permissions["تنظیمات"] === "view"))) return true;
   } catch { /* malformed legacy permissions are treated as denied */ }
   return false;
 }
