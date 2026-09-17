@@ -37,6 +37,7 @@ import {
   RefreshCw,
   RotateCcw,
   Trash2,
+  ShieldCheck,
 } from "lucide-react";
 import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -206,6 +207,9 @@ export default function Home() {
   const updateOrderMutation=trpc.crm.updateOrder.useMutation();
   const updateCustomerMutation=trpc.crm.updateCustomer.useMutation();
   const utils=trpc.useUtils();
+  const authQuery=trpc.auth.me.useQuery();
+  const userPermissions=useMemo(()=>{if(authQuery.data?.role==="admin")return new Set(["inventory.view","inventory.edit","inventory.movements","inventory.history","reports.view","reports.export"]);try{return new Set(Object.entries(JSON.parse(authQuery.data?.permissionsJson||"{}" )).filter(([,value])=>value==="view"||value==="edit").map(([key])=>key));}catch{return new Set<string>();}},[authQuery.data]);
+  const can=(scope:string)=>authQuery.data?.role==="admin"||userPermissions.has(scope);
 
   useEffect(() => { localStorage.setItem("taraz-orders", JSON.stringify(orders)); }, [orders]);
   useEffect(() => {
@@ -362,7 +366,7 @@ export default function Home() {
       <article className="stat-card lavender-card"><div className="stat-icon"><Boxes size={20} /></div><div><span>موجودی پوشاک</span><strong>{number(garmentStock)}</strong><small>{number(garments.length)} مدل ثبت‌شده</small></div></article>
       <article className="stat-card yellow-card"><div className="stat-icon"><CircleDollarSign size={20} /></div><div><span>فروش تحویل‌شده</span><strong>{money(delivered.reduce((sum, order) => sum + order.total, 0))}</strong><small>از داده‌های ثبت‌شده</small></div></article>
     </section>
-    <section className="sales-chart-card"><div className="chart-card-head"><div><span className="eyebrow">تحلیل فروش</span><h3>مقایسه فروش ماه‌های مختلف</h3><p>مجموع مبلغ سفارش‌های ثبت‌شده بر اساس ماه شمسی</p></div><span className="chart-unit">{currencyLabel()}</span></div><div className="sales-chart"><ResponsiveContainer width="100%" height={270}><BarChart data={salesByMonth} margin={{ top: 8, right: 8, left: 8, bottom: 2 }}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7ece7"/><XAxis dataKey="month" tick={{ fontSize: 10, fill: "#718078" }} interval={0} tickFormatter={(value) => String(value).slice(0, 4)}/><YAxis tick={{ fontSize: 10, fill: "#718078" }} tickFormatter={(value) => new Intl.NumberFormat("fa-IR", { notation: "compact", maximumFractionDigits: 1 }).format(Number(value))}/><Tooltip formatter={(value) => [money(Number(value)), `فروش (${currencyLabel()})`]} labelFormatter={(label) => `ماه ${label}`} contentStyle={{ direction: "rtl", borderRadius: 10, border: "1px solid #dfe8dd", fontFamily: "Vazirmatn" }}/><Bar dataKey="sales" name="فروش" fill="#31584a" radius={[7, 7, 0, 0]} maxBarSize={34}/></BarChart></ResponsiveContainer></div></section>
+    {can("reports.view") ? <section className="sales-chart-card"><div className="chart-card-head"><div><span className="eyebrow">تحلیل فروش</span><h3>مقایسه فروش ماه‌های مختلف</h3><p>مجموع مبلغ سفارش‌های ثبت‌شده بر اساس ماه شمسی</p></div><span className="chart-unit">{currencyLabel()}</span></div><div className="sales-chart"><ResponsiveContainer width="100%" height={270}><BarChart data={salesByMonth} margin={{ top: 8, right: 8, left: 8, bottom: 2 }}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e7ece7"/><XAxis dataKey="month" tick={{ fontSize: 10, fill: "#718078" }} interval={0} tickFormatter={(value) => String(value).slice(0, 4)}/><YAxis tick={{ fontSize: 10, fill: "#718078" }} tickFormatter={(value) => new Intl.NumberFormat("fa-IR", { notation: "compact", maximumFractionDigits: 1 }).format(Number(value))}/><Tooltip formatter={(value) => [money(Number(value)), `فروش (${currencyLabel()})`]} labelFormatter={(label) => `ماه ${label}`} contentStyle={{ direction: "rtl", borderRadius: 10, border: "1px solid #dfe8dd", fontFamily: "Vazirmatn" }}/><Bar dataKey="sales" name="فروش" fill="#31584a" radius={[7, 7, 0, 0]} maxBarSize={34}/></BarChart></ResponsiveContainer></div></section> : <section className="data-card restricted-card"><ShieldCheck size={21}/><strong>گزارش‌های فروش محدود شده است</strong><span>برای مشاهده نمودار، مجوز «گزارش‌ها · مشاهده» را از مدیر سیستم دریافت کنید.</span></section>}
     <section className="dashboard-grid">
       <OrderTable data={pending.slice(0, 3)} compact />
       <aside className="readiness-card">
@@ -402,7 +406,7 @@ export default function Home() {
   </>;
 
   const InventoryPage = <>
-    <PageHeading eyebrow="موجودی، ویژگی و قابلیت ویرایش" title="انبار" description="موجودی پوشاک و مواد اولیه را با جزئیات کامل، زیرشاخه و نقطه سفارش مدیریت کنید." action={<button className="primary-button" onClick={() => inventoryTab === "garments" ? openProduct() : openMaterial()}><Plus size={18} /> {inventoryTab === "garments" ? "افزودن پوشاک" : "افزودن ماده اولیه"}</button>} />
+    <PageHeading eyebrow="موجودی، ویژگی و قابلیت ویرایش" title="انبار" description="موجودی پوشاک و مواد اولیه را با جزئیات کامل، زیرشاخه و نقطه سفارش مدیریت کنید." action={<button className="primary-button" disabled={!can("inventory.edit")} title={!can("inventory.edit") ? "مجوز افزودن و ویرایش کالا لازم است" : undefined} onClick={() => inventoryTab === "garments" ? openProduct() : openMaterial()}><Plus size={18} /> {inventoryTab === "garments" ? "افزودن پوشاک" : "افزودن ماده اولیه"}</button>} />
     <div className="inventory-tabs"><button className={inventoryTab === "garments" ? "selected" : ""} onClick={() => setInventoryTab("garments")}><Package size={18} /> پوشاک <span>{number(garments.length)} مدل</span></button><button className={inventoryTab === "materials" ? "selected" : ""} onClick={() => setInventoryTab("materials")}><Box size={18} /> مواد اولیه <span>{number(materials.length)} قلم</span></button></div>
     <section className="inventory-summary"><div><span>کل موجودی پوشاک</span><strong>{number(garmentStock)} <small>عدد</small></strong><p>در {number(garments.length)} مدل مختلف</p></div><div><span>مواد نیازمند سفارش</span><strong className="coral-text">{number(lowStock)} <small>قلم</small></strong><p>بر اساس نقطه سفارش شما</p></div><div className="fabric-promo"><div><span>طبقه‌بندی منعطف</span><strong>هر ویژگی را اضافه کنید.</strong><p>جنس، رنگ، گرماژ و زیرشاخه‌ها محدودیتی ندارند.</p></div></div></section>
     <section className="toolbar inventory-toolbar">{commonSearch}<div className="toolbar-actions"><button className={`filter-button ${inventoryFilterOpen ? "active" : ""}`} onClick={() => setInventoryFilterOpen(value => !value)}><ListFilter size={17} /> فیلتر پیشرفته <ChevronDown size={15} /></button><button className={`filter-button ${inventoryOnlyLow ? "active" : ""}`} onClick={() => setInventoryOnlyLow(value => !value)}><SlidersHorizontal size={17} /> فقط کم‌موجود</button></div></section>
