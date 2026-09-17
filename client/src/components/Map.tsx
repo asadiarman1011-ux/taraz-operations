@@ -104,12 +104,14 @@ function loadMapScript(): Promise<void> {
   mapScriptPromise = new Promise((resolve, reject) => {
     const script = existing ?? document.createElement("script");
     script.id = "sepid-google-maps-script";
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker`;
+    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker&loading=async`;
     script.async = true;
     script.defer = true;
     script.crossOrigin = "anonymous";
-    script.onload = () => resolve();
-    script.onerror = () => { mapScriptPromise = null; reject(new Error("Failed to load Google Maps")); };
+    const handleLoad = () => { script.removeEventListener("load", handleLoad); script.removeEventListener("error", handleError); resolve(); };
+    const handleError = () => { script.removeEventListener("load", handleLoad); script.removeEventListener("error", handleError); mapScriptPromise = null; reject(new Error("Failed to load Google Maps")); };
+    script.addEventListener("load", handleLoad, { once: true });
+    script.addEventListener("error", handleError, { once: true });
     if (!existing) document.head.appendChild(script);
   });
   return mapScriptPromise;
