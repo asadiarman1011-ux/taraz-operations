@@ -46,11 +46,15 @@ export async function setupVite(app: Express, server: Server) {
       // transformation. In the public WebDev proxy that client attempts a
       // websocket against an unreachable local endpoint, so strip it from
       // the HTML served to browsers.
-      const page = (await vite.transformIndexHtml(url, template)).replace(
-        /<script[^>]+src=["']\/\@vite\/client["'][^>]*><\/script>/gi,
-        ""
-      );
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      const page = (await vite.transformIndexHtml(url, template))
+        // Remove any form Vite may use for its client module, including
+        // preload/module variants, so stale browsers cannot reconnect HMR.
+        .replace(/<script[^>]*vite\/client[^>]*><\/script>/gi, "")
+        .replace(/<link[^>]*vite\/client[^>]*>/gi, "")
+        .replace(/<script[^>]*src=["'][^"']*\/\@vite\/client[^"']*["'][^>]*><\/script>/gi, "");
+      res.status(200)
+        .set({ "Content-Type": "text/html", "Cache-Control": "no-store, no-cache, must-revalidate" })
+        .end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
