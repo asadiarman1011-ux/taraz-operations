@@ -24,6 +24,34 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
+  // React's development transform imports /@vite/client through the
+  // /@react-refresh module. Serve only the tiny query helper it needs, with
+  // no websocket client, so React still boots while stale HMR cannot connect.
+  app.use((req, res, next) => {
+    if (req.path === "/@vite/client") {
+      res.type("js").send(`
+        export const injectQuery = (fn) => fn;
+        export const updateStyle = () => {};
+        export const removeStyle = () => {};
+        export const createHotContext = () => ({
+          accept: () => {},
+          dispose: () => {},
+          prune: () => {},
+          invalidate: () => {},
+          on: () => {},
+          off: () => {},
+          send: () => {},
+        });
+      `);
+      return;
+    }
+    if (req.path === "/__vite_ping") {
+      res.status(404).end();
+      return;
+    }
+    next();
+  });
+
   app.use(vite.middlewares);
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;

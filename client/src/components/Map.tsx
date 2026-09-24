@@ -76,7 +76,7 @@
 
 /// <reference types="@types/google.maps" />
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { cn } from "@/lib/utils";
 
@@ -99,6 +99,7 @@ function loadMapScript(): Promise<void> {
   if (existing) {
     if (window.google?.maps?.Map) return Promise.resolve();
     if (mapScriptPromise) return mapScriptPromise;
+    existing.remove();
   }
   if (mapScriptPromise) return mapScriptPromise;
   mapScriptPromise = new Promise((resolve, reject) => {
@@ -132,6 +133,7 @@ export function MapView({
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
+  const [mapFailed, setMapFailed] = useState(false);
 
   const init = usePersistFn(async () => {
     await loadMapScript();
@@ -156,10 +158,26 @@ export function MapView({
   });
 
   useEffect(() => {
-    init();
+    init().catch(() => setMapFailed(true));
   }, [init]);
 
   return (
-    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
+    <div className={cn("w-full h-[500px] relative overflow-hidden", className)}>
+      <div ref={mapContainer} className="w-full h-full" />
+      {mapFailed && (
+        <div className="map-fallback" role="status">
+          <iframe
+            title="نمایش موقعیت ذخیره‌شده"
+            loading="lazy"
+            src={`https://www.openstreetmap.org/export/embed.html?bbox=${initialCenter.lng - 0.04}%2C${initialCenter.lat - 0.03}%2C${initialCenter.lng + 0.04}%2C${initialCenter.lat + 0.03}&layer=mapnik&marker=${initialCenter.lat}%2C${initialCenter.lng}`}
+          />
+          <div className="map-fallback-actions">
+            <span>نمایش جایگزین موقعیت ذخیره‌شده</span>
+            <a href={`https://neshan.org/maps/@${initialCenter.lat},${initialCenter.lng},15z`} target="_blank" rel="noreferrer">باز کردن در نشان</a>
+            <a href={`https://www.google.com/maps?q=${initialCenter.lat},${initialCenter.lng}`} target="_blank" rel="noreferrer">باز کردن در گوگل</a>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
