@@ -30,9 +30,24 @@ export async function setupVite(app: Express, server: Server) {
   app.use((req, res, next) => {
     if (req.path === "/@vite/client") {
       res.type("js").send(`
+        const styles = new Map();
         export const injectQuery = (fn) => fn;
-        export const updateStyle = () => {};
-        export const removeStyle = () => {};
+        export const updateStyle = (id, content) => {
+          if (typeof document === "undefined") return;
+          let style = styles.get(id) || document.querySelector('style[data-vite-dev-id="' + id + '"]');
+          if (!style) {
+            style = document.createElement("style");
+            style.setAttribute("data-vite-dev-id", id);
+            document.head.appendChild(style);
+          }
+          style.textContent = content;
+          styles.set(id, style);
+        };
+        export const removeStyle = (id) => {
+          const style = styles.get(id) || document.querySelector('style[data-vite-dev-id="' + id + '"]');
+          if (style) style.remove();
+          styles.delete(id);
+        };
         export const createHotContext = () => ({
           accept: () => {},
           dispose: () => {},
