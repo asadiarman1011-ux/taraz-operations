@@ -83,6 +83,7 @@ import { cn } from "@/lib/utils";
 declare global {
   interface Window {
     google?: typeof google;
+    __sepidMapsReady?: () => void;
   }
 }
 
@@ -95,22 +96,28 @@ let mapScriptPromise: Promise<void> | null = null;
 
 function loadMapScript(): Promise<void> {
   if (window.google?.maps?.Map) return Promise.resolve();
-  const existing = document.getElementById("sepid-google-maps-script") as HTMLScriptElement | null;
+  let existing = document.getElementById("sepid-google-maps-script") as HTMLScriptElement | null;
   if (existing) {
     if (window.google?.maps?.Map) return Promise.resolve();
     if (mapScriptPromise) return mapScriptPromise;
     existing.remove();
+    existing = null;
   }
   if (mapScriptPromise) return mapScriptPromise;
   mapScriptPromise = new Promise((resolve, reject) => {
     const script = existing ?? document.createElement("script");
+    const finish = () => {
+      if (window.google?.maps?.Map) resolve();
+      else handleError();
+    };
     script.id = "sepid-google-maps-script";
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker&loading=async`;
+    window.__sepidMapsReady = finish;
+    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker&loading=async&callback=__sepidMapsReady`;
     script.async = true;
     script.defer = true;
     script.crossOrigin = "anonymous";
-    const handleLoad = () => { script.removeEventListener("load", handleLoad); script.removeEventListener("error", handleError); resolve(); };
-    const handleError = () => { script.removeEventListener("load", handleLoad); script.removeEventListener("error", handleError); mapScriptPromise = null; reject(new Error("Failed to load Google Maps")); };
+    const handleLoad = () => { if (window.google?.maps?.Map) finish(); };
+    const handleError = () => { script.removeEventListener("load", handleLoad); script.removeEventListener("error", handleError); window.__sepidMapsReady = undefined; mapScriptPromise = null; reject(new Error("Failed to load Google Maps")); };
     script.addEventListener("load", handleLoad, { once: true });
     script.addEventListener("error", handleError, { once: true });
     if (!existing) document.head.appendChild(script);
@@ -174,6 +181,9 @@ export function MapView({
           <div className="map-fallback-actions">
             <span>نمایش جایگزین موقعیت ذخیره‌شده</span>
             <a href={`https://neshan.org/maps/@${initialCenter.lat},${initialCenter.lng},15z`} target="_blank" rel="noreferrer">باز کردن در نشان</a>
+            <a href={`neshan://maps/@${initialCenter.lat},${initialCenter.lng},15z`}>اپ نشان</a>
+            <a href={`https://balad.ir/@${initialCenter.lat},${initialCenter.lng},15z`} target="_blank" rel="noreferrer">باز کردن در بلد</a>
+            <a href={`balad://map?lat=${initialCenter.lat}&lng=${initialCenter.lng}&zoom=15`}>اپ بلد</a>
             <a href={`https://www.google.com/maps?q=${initialCenter.lat},${initialCenter.lng}`} target="_blank" rel="noreferrer">باز کردن در گوگل</a>
           </div>
         </div>
